@@ -1,0 +1,20 @@
+---------------------  calculator 3.0 regform  -------------------------
+
+  your name/organization:
+    [                                  ]
+  your email:
+    [                                  ]
+
+  how often and why are you using calculator?
+    [_] rarely.
+    [_] often, I work in it.
+    [_] I use it's source codes.
+    [_] other:  [                                 ]
+
+  your wishes and suggestions about calculator:
+    [
+
+    ]
+
+------------------------------------------------------------------------
+                                       ruiv@uic.nnov.ru / lomecb@chat.ru

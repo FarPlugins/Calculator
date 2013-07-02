@@ -1,0 +1,34 @@
+
+Copyright (c) 1999-2001  Cail Lomecb<ruiv@uic.nnov.ru>        calculator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    0. Calculator  is  a  numeric  expressions  parser.   You can freely
+redistribute,  modify, and use calculator in any projects (commercial or
+not)  in source and binary forms, with or without modification, provided
+that the following conditions are met:
+
+    1. Redistribution   in  source  and  binary  forms must include this
+copyright note (or it russian copy) without changes.
+
+    2. Redistribution in  source or binary form must include somewere in
+program output, advertising materials mentioning features or use of your
+software,  in the documentation and/or other materials provided with the
+distribution the following acknowledgment:
+  ``This software uses numeric expressions parser codes
+by Cail Lomecb <ruiv@uic.nnov.ru>, http://www.uic.nnov.ru/~ruiv/''
+
+    3. You must send  me colorer registration form (freely) if you using
+colorer in any form.
+
+    4. You cannot derive new versions of ``calculator''. You may produce
+your  own  software,  based  on  calculator  sources,  but you can't use
+calculator name to distribute it.
+
+    5.  ``Calculator''  sources and binaries are provided by Cail Lomecb
+``AS  IS''  without  any  forms  of  warranties,  assumptions  and other
+difficult english terms.
+
+    6. You  can  use  russian version of colorer license if you can read
+russian and understand it.
+                                              Thanks
+                                                    Cail Lomecb

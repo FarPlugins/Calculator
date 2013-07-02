@@ -1,0 +1,46 @@
+REGEDIT4
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros]
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Shell]
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Shell\CtrlF6]
+"Sequence"="F11 l Enter"
+"DisableOutput"=dword:00000001
+"Description"=""
+
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Editor]
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Editor\Alt=]
+"Sequence"="F11 l D"
+"Description"=""
+"DisableOutput"=dword:00000001
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Editor\AltB]
+"Sequence"="F11 l B"
+"Description"=""
+"DisableOutput"=dword:00000001
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Editor\AltH]
+"Sequence"="F11 l H"
+"Description"=""
+"DisableOutput"=dword:00000001
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Editor\AltO]
+"Sequence"="F11 l O"
+"Description"=""
+"DisableOutput"=dword:00000001
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Editor\CtrlF6]
+"Sequence"="F11 l Enter Enter"
+"Description"=""
+"DisableOutput"=dword:00000001
+
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Viewer]
+
+[HKEY_CURRENT_USER\Software\Far2\KeyMacros\Viewer\CtrlF6]
+"Sequence"="F11 l Enter"
+"Description"=""
+"DisableOutput"=dword:00000001
