@@ -493,7 +493,8 @@ public:
 	{
 		CalcDialogItem *Item = (CalcDialogItem *)param2;
 		Big val = 0;
-    
+
+        EnableRedraw(false);
 		bool was_error = false;
 		SArg res = parser->Parse(Item->PtrData, props.case_sensitive != 0);
 		if (parser->GetError())
@@ -565,6 +566,7 @@ public:
 				}
 			}
 		}
+        EnableRedraw(true);
 		return TRUE;
 	}
   
@@ -909,11 +911,14 @@ public:
 			}
 			else if (Item->PtrData[0] == '\0')
 			{
+				EnableRedraw(false);
 				SetText(CALC_TYPE_ID, L"");
 				for (int i = addons_info.edit_id1; i <= addons_info.edit_id2; i++)
 					SetText(i, L"");
+				EnableRedraw(true);
 			} else
 			{
+				EnableRedraw(false);
 				SArg res = parser->Parse(Item->PtrData, props.case_sensitive != 0);
 
 				if (parser->GetError())
@@ -964,13 +969,12 @@ public:
 						}
 					}
 				}
+				EnableRedraw(true);
 			}
 
 			if (force_update)
 				free(Item);
 		}
-    
-		//RedrawDialog();
 
 		return TRUE;
 	}
