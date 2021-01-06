@@ -5,18 +5,18 @@
 //  to License (see /doc/license.txt for more information).
 //
 
-#include <stdio.h>
+#include <cstdio>
 #include <windows.h>
 
-#include <hashmap/hashmap.h>
+#include <hashmap/HashMap.h>
 
 #include "api.h"
 #include "calc.h"
 #include "messages.h"
 
 
-CalcApi *api = NULL;
-CalcDialogFuncs *dlg_funcs = NULL;
+CalcApi *api = nullptr;
+CalcDialogFuncs *dlg_funcs = nullptr;
 
 // exports
 
@@ -34,8 +34,7 @@ extern "C"
 // FAR exports
 void WINAPI SetStartupInfoW(void *info)
 {
-	if (api)
-		delete api;
+    //TODO start on first call in OpenW, not in init
 	api = CreateApiFar3(info);
 	if (api)
 	{
@@ -52,7 +51,7 @@ void WINAPI GetPluginInfoW(void *pinfo)
 HANDLE WINAPI OpenW(void *oinfo)
 {
 	CalcOpen(api->IsOpenedFromEditor(oinfo, 0));
-	return NULL;
+	return nullptr;
 }
 
 int WINAPI ConfigureW(void *c)
@@ -109,7 +108,7 @@ static CALC_INT_PTR __stdcall dlgProc(DLGHANDLE hdlg, int msg, int param1, void 
 CalcDialog::CalcDialog()
 {
 	msg_tbl = dlg_funcs->GetMessageTable();
-	hdlg = NULL;
+	hdlg = nullptr;
 }
 
 CalcDialog::~CalcDialog()

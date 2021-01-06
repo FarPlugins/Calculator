@@ -5,12 +5,11 @@
 //  to License (see /doc/license.txt for more information).
 //
 
-#include <math.h>
+#include <cmath>
 #include <string>
 #include <initguid.h>
 
 #include "api.h"
-#include "calc.h"
 #include "version.h"
 
 #include <farplugin/3.0/plugin.hpp>
@@ -40,7 +39,7 @@ static const GUID dlg_guids[] =
 };
 
 static const wchar_t *PluginMenuStrings, *PluginConfigStrings;
-static CalcDialog::CalcDialogCallback *msg_table = NULL;
+static CalcDialog::CalcDialogCallback *msg_table = nullptr;
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -52,95 +51,95 @@ public:
 		this->Info = Info;
 	}
 
-	virtual void EnableRedraw(DLGHANDLE hdlg, bool en)
+	void EnableRedraw(DLGHANDLE hdlg, bool en) override
 	{
-		Info->SendDlgMessage(hdlg, DM_ENABLEREDRAW, en ? TRUE : FALSE, 0);
+		Info->SendDlgMessage(hdlg, DM_ENABLEREDRAW, en ? TRUE : FALSE, nullptr);
 	}
-	virtual void ResizeDialog(DLGHANDLE hdlg, const CalcCoord & dims)
+	void ResizeDialog(DLGHANDLE hdlg, const CalcCoord & dims) override
 	{
 		Info->SendDlgMessage(hdlg, DM_RESIZEDIALOG, 0, (void *)&dims);
 	}
-	virtual void RedrawDialog(DLGHANDLE hdlg)
+	void RedrawDialog(DLGHANDLE hdlg) override
 	{
-		Info->SendDlgMessage(hdlg, DM_REDRAW, 0, 0);
+		Info->SendDlgMessage(hdlg, DM_REDRAW, 0, nullptr);
 	}
-	virtual void Close(DLGHANDLE hdlg, int exitcode)
+	void Close(DLGHANDLE hdlg, int exitcode) override
 	{
-		Info->SendDlgMessage(hdlg, DM_CLOSE, exitcode, 0);
+		Info->SendDlgMessage(hdlg, DM_CLOSE, exitcode, nullptr);
 	}
-	virtual void GetDlgRect(DLGHANDLE hdlg, CalcRect *rect)
+	void GetDlgRect(DLGHANDLE hdlg, CalcRect *rect) override
 	{
 		Info->SendDlgMessage(hdlg, DM_GETDLGRECT, 0, (void *)rect);
 	}
 
-	virtual void GetDlgItemShort(DLGHANDLE hdlg, int id, CalcDialogItem *item)
+	void GetDlgItemShort(DLGHANDLE hdlg, int id, CalcDialogItem *item) override
 	{
-		FarDialogItem fdi;
+		FarDialogItem fdi{};
 		Info->SendDlgMessage(hdlg, DM_GETDLGITEMSHORT, id, (void *)&fdi);
 		ConvertToDlgItem((void *)&fdi, item);
 	}
-	virtual void SetDlgItemShort(DLGHANDLE hdlg, int id, const CalcDialogItem & item)
+	void SetDlgItemShort(DLGHANDLE hdlg, int id, const CalcDialogItem & item) override
 	{
-		FarDialogItem fdi;
+		FarDialogItem fdi{};
 		ConvertFromDlgItem(&item, (void *)&fdi);
 		Info->SendDlgMessage(hdlg, DM_SETDLGITEMSHORT, id, (void *)&fdi);
 	}
-	virtual void SetItemPosition(DLGHANDLE hdlg, int id, const CalcRect & rect)
+	void SetItemPosition(DLGHANDLE hdlg, int id, const CalcRect & rect) override
 	{
 		Info->SendDlgMessage(hdlg, DM_SETITEMPOSITION, id, (void *)&rect);
 	}
-	virtual int  GetFocus(DLGHANDLE hdlg)
+	int GetFocus(DLGHANDLE hdlg) override
 	{
-		return (int)Info->SendDlgMessage(hdlg, DM_GETFOCUS, 0, 0);
+		return (int)Info->SendDlgMessage(hdlg, DM_GETFOCUS, 0, nullptr);
 	}
-	virtual void SetFocus(DLGHANDLE hdlg, int id)
+	void SetFocus(DLGHANDLE hdlg, int id) override
 	{
-		Info->SendDlgMessage(hdlg, DM_SETFOCUS, id, 0);
+		Info->SendDlgMessage(hdlg, DM_SETFOCUS, id, nullptr);
 	}
-	virtual void EditChange(DLGHANDLE hdlg, int id, const CalcDialogItem & item)
+	void EditChange(DLGHANDLE hdlg, int id, const CalcDialogItem & item) override
 	{
-		FarDialogItem fdi;
+		FarDialogItem fdi{};
 		ConvertFromDlgItem(&item, (void *)&fdi);
 		Info->SendDlgMessage(hdlg, DN_EDITCHANGE, id, (void *)&fdi);
 	}
-	virtual void SetSelection(DLGHANDLE hdlg, int id, const CalcEditorSelect & sel)
+	void SetSelection(DLGHANDLE hdlg, int id, const CalcEditorSelect & sel) override
 	{
 		Info->SendDlgMessage(hdlg, DM_SETSELECTION, id, (void *)&sel);
 	}
-	virtual void SetCursorPos(DLGHANDLE hdlg, int id, const CalcCoord & pos)
+	void SetCursorPos(DLGHANDLE hdlg, int id, const CalcCoord & pos) override
 	{
 		Info->SendDlgMessage(hdlg, DM_SETCURSORPOS, id, (void *)&pos);
 	}
-	virtual void GetText(DLGHANDLE hdlg, int id, std::wstring &str)
+	void GetText(DLGHANDLE hdlg, int id, std::wstring &str) override
 	{
 		FarDialogItemData item = { sizeof(FarDialogItemData) };
-		item.PtrLength = Info->SendDlgMessage(hdlg, DM_GETTEXT, id, 0);
+		item.PtrLength = Info->SendDlgMessage(hdlg, DM_GETTEXT, id, nullptr);
 		str.clear();
 		str.resize(item.PtrLength + 1);
 		item.PtrData = (wchar_t *)str.data();
 		Info->SendDlgMessage(hdlg, DM_GETTEXT, id, &item);
 	}
-	virtual void SetText(DLGHANDLE hdlg, int id, const std::wstring & str)
+	void SetText(DLGHANDLE hdlg, int id, const std::wstring & str) override
 	{
 		Info->SendDlgMessage(hdlg, DM_SETTEXTPTR, id, (void *)str.c_str());
 	}
-	virtual void AddHistory(DLGHANDLE hdlg, int id, const std::wstring & str)
+	void AddHistory(DLGHANDLE hdlg, int id, const std::wstring & str) override
 	{
 		Info->SendDlgMessage(hdlg, DM_ADDHISTORY, id, (void *)str.c_str());
 	}
-	virtual bool  IsChecked(DLGHANDLE hdlg, int id)
+	bool IsChecked(DLGHANDLE hdlg, int id) override
 	{
-		return ((int)Info->SendDlgMessage(hdlg, DM_GETCHECK, id, 0) == BSTATE_CHECKED);
+		return ((int)Info->SendDlgMessage(hdlg, DM_GETCHECK, id, nullptr) == BSTATE_CHECKED);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
 
-	virtual DLGHANDLE DialogInit(int id, int X1, int Y1, int X2, int Y2, const wchar_t *HelpTopic, 
+	DLGHANDLE DialogInit(int id, int X1, int Y1, int X2, int Y2, const wchar_t *HelpTopic,
 								struct CalcDialogItem *Item, unsigned int ItemsNumber,
-								CALCDLGPROC dlgProc)
+								CALCDLGPROC dlgProc) override
 	{
 		if (id >= sizeof(dlg_guids) / sizeof(dlg_guids[0]))
-			return NULL;
+			return nullptr;
 
 		FarDialogItem *faritems = (FarDialogItem *)malloc(ItemsNumber * sizeof(FarDialogItem));
 		for (unsigned i = 0; i < ItemsNumber; i++)
@@ -149,24 +148,24 @@ public:
 		}
 		
 		return Info->DialogInit(&MainGuid, &dlg_guids[id], X1, Y1, X2, Y2, HelpTopic, faritems, ItemsNumber, 0, 0, 
-			(FARWINDOWPROC)dlgProc, NULL);
+			(FARWINDOWPROC)dlgProc, nullptr);
 	}
 
-	virtual intptr_t DialogRun(DLGHANDLE hdlg)
+	intptr_t DialogRun(DLGHANDLE hdlg) override
 	{
 		return Info->DialogRun(hdlg);
 	}
 
-	virtual void DialogFree(DLGHANDLE hdlg)
+	void DialogFree(DLGHANDLE hdlg) override
 	{
 		Info->DialogFree(hdlg);
 	}
 
-	virtual CALC_INT_PTR DefDlgProc(DLGHANDLE hdlg, int msg, int param1, void *param2)
+	CALC_INT_PTR DefDlgProc(DLGHANDLE hdlg, int msg, int param1, void *param2) override
 	{
 		return Info->DefDlgProc(hdlg, msg, param1, (void *)param2);
 	}
-	virtual void ConvertToDlgItem(void *faritem, CalcDialogItem *calcitem)
+	void ConvertToDlgItem(void *faritem, CalcDialogItem *calcitem) override
 	{
 		FarDialogItem *fi = (FarDialogItem *)faritem;
 		calcitem->Type = (CalcDialogItemTypes)fi->Type;
@@ -178,7 +177,7 @@ public:
 		calcitem->Flags = fi->Flags;
 		calcitem->PtrData = (const wchar_t *)fi->Data;
 	}
-	virtual void ConvertFromDlgItem(const CalcDialogItem *calcitem, void *faritem)
+	void ConvertFromDlgItem(const CalcDialogItem *calcitem, void *faritem) override
 	{
 		FarDialogItem *fi = (FarDialogItem *)faritem;
 		fi->Type = (FARDIALOGITEMTYPES)calcitem->Type;
@@ -189,13 +188,13 @@ public:
 		fi->Reserved0 = calcitem->Reserved;
 		fi->Flags = calcitem->Flags;
 		fi->Data = calcitem->PtrData;
-		fi->History = (calcitem->Flags & CALC_DIF_HISTORY) ? L"calc" : NULL;
-		fi->Mask = NULL;
-		fi->UserData = NULL;
+		fi->History = (calcitem->Flags & CALC_DIF_HISTORY) ? L"calc" : nullptr;
+		fi->Mask = nullptr;
+		fi->UserData = 0;
 		fi->MaxLength = 0;
 	}
 
-	virtual CALC_INT_PTR PreProcessMessage(DLGHANDLE hdlg, int msg, int &param1, void * &param2)
+	CALC_INT_PTR PreProcessMessage(DLGHANDLE hdlg, int msg, int &param1, void * &param2) override
 	{
 		if (msg == DN_EDITCHANGE)
 		{
@@ -206,7 +205,7 @@ public:
 		return 0;
 	}
 
-	virtual CALC_INT_PTR PostProcessMessage(DLGHANDLE hdlg, int msg, CALC_INT_PTR &ret, int &param1, void * &param2)
+	CALC_INT_PTR PostProcessMessage(DLGHANDLE hdlg, int msg, CALC_INT_PTR &ret, int &param1, void * &param2) override
 	{
 		if (msg == DN_EDITCHANGE)
 		{
@@ -215,14 +214,14 @@ public:
 		return 0;
 	}
 
-	virtual CalcDialog::CalcDialogCallback *GetMessageTable()
+	CalcDialog::CalcDialogCallback *GetMessageTable() override
 	{
-		if (msg_table == NULL)
+		if (msg_table == nullptr)
 		{
 			const int max_msg_id = DM_USER + 32;
 			msg_table = (CalcDialog::CalcDialogCallback *)malloc(max_msg_id * sizeof(CalcDialog::CalcDialogCallback));
-			if (msg_table == NULL)
-				return NULL;
+			if (msg_table == nullptr)
+				return nullptr;
 			memset(msg_table, 0, max_msg_id * sizeof(CalcDialog::CalcDialogCallback));
 			// fill the LUT
 			msg_table[DN_INITDIALOG]      = &CalcDialog::OnInitDialog;
@@ -242,14 +241,14 @@ protected:
 	PluginStartupInfo *Info;
 };
 
-static CalcDialogFuncsFar3 *dlg_funcs = NULL;
+static CalcDialogFuncsFar3 *dlg_funcs = nullptr;
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 class CalcApiFar3 : public CalcApi
 {
 public:
-	virtual void GetPluginInfo(void *pinfo, const wchar_t *name)
+	void GetPluginInfo(void *pinfo, const wchar_t *name) override
 	{
 		struct PluginInfo *pInfo = (struct PluginInfo *)pinfo;
 		pInfo->StructSize = sizeof(*pInfo);
@@ -268,43 +267,33 @@ public:
 		plugin_name = name;
 	}
 
-	virtual bool IsOpenedFromEditor(void *oinfo, int OpenFrom)
+	bool IsOpenedFromEditor(void *oinfo, int OpenFrom) override
 	{
 		struct OpenInfo *oInfo = (struct OpenInfo *)oinfo;
 		return (oInfo->OpenFrom == OPEN_EDITOR);
 	}
 
-	virtual const wchar_t *GetMsg(int MsgId)
+	const wchar_t *GetMsg(int MsgId) override
 	{
 		return Info.GetMsg(&MainGuid, MsgId);
 	}
 
-	virtual int GetMinVersion(void *ver)
-	{
-		if (ver)
-		{
-			struct VersionInfo *vi = (struct VersionInfo *)ver;
-			*vi = MAKEFARVERSION(2, 0, 0, 994, VS_RELEASE);
-		}
-		return 0;
-	}
-
-	virtual CalcDialogFuncs *GetDlgFuncs()
+	CalcDialogFuncs *GetDlgFuncs() override
 	{
 		if (!dlg_funcs)
 			dlg_funcs = new CalcDialogFuncsFar3(&Info);
 		return dlg_funcs;
 	}
 
-	virtual intptr_t Message(unsigned long Flags, const wchar_t *HelpTopic, const wchar_t * const *Items,
-						int ItemsNumber, int ButtonsNumber)
+	intptr_t Message(unsigned long Flags, const wchar_t *HelpTopic, const wchar_t * const *Items,
+						int ItemsNumber, int ButtonsNumber) override
 	{
 		return Info.Message(&MainGuid, &MsgGuid, Flags, HelpTopic, Items, ItemsNumber, ButtonsNumber);
 	}
 
-	virtual intptr_t Menu(int X, int Y, int MaxHeight, unsigned long long Flags,
+	intptr_t Menu(int X, int Y, int MaxHeight, unsigned long long Flags,
 		const wchar_t *Title, const wchar_t *HelpTopic, 
-		const std::vector<CalcMenuItem> & Items)
+		const std::vector<CalcMenuItem> & Items) override
 	{
 		std::vector<struct FarMenuItem> Items3(Items.size());
 
@@ -326,41 +315,41 @@ public:
 		/// \TODO: 3.x flags are partially incompatible!
 		FARMENUFLAGS flags = (FARMENUFLAGS)Flags;
 
-		return Info.Menu(&MainGuid, &MenuGuid, X, Y, MaxHeight, flags, Title, NULL, HelpTopic,
-							NULL, NULL, items, Items.size());
+		return Info.Menu(&MainGuid, &MenuGuid, X, Y, MaxHeight, flags, Title, nullptr, HelpTopic,
+                         nullptr, nullptr, items, Items.size());
 	}
 
-	virtual void EditorGet(CalcEditorGetString *string, CalcEditorInfo *info)
+	void EditorGet(CalcEditorGetString *string, CalcEditorInfo *info) override
 	{
 		Info.EditorControl(-1, ECTL_GETSTRING, 0, string);
 		Info.EditorControl(-1, ECTL_GETINFO, 0, info);
 	}
 
-	virtual void EditorSelect(const CalcEditorSelect & sel)
+	void EditorSelect(const CalcEditorSelect & sel) override
 	{
 		Info.EditorControl(-1, ECTL_SELECT, 0, (void *)&sel);
 	}
 
-	virtual void EditorInsert(const wchar_t *text)
+	void EditorInsert(const wchar_t *text) override
 	{
 		Info.EditorControl(-1, ECTL_INSERTTEXT, 0, (void *)text);
 	}
 
-	virtual void EditorRedraw()
+	void EditorRedraw() override
 	{
-		Info.EditorControl(-1, ECTL_REDRAW, 0, 0);
+		Info.EditorControl(-1, ECTL_REDRAW, 0, nullptr);
 	}
 	
-	virtual void GetDlgColors(CalcColor *edit_color, CalcColor *sel_color, CalcColor *highlight_color)
+	void GetDlgColors(CalcColor *edit_color, CalcColor *sel_color, CalcColor *highlight_color) override
 	{
 		Info.AdvControl(&MainGuid, ACTL_GETCOLOR, COL_DIALOGEDIT, (void *)edit_color);
 		Info.AdvControl(&MainGuid, ACTL_GETCOLOR, COL_DIALOGEDITSELECTED, (void *)sel_color);
 		Info.AdvControl(&MainGuid, ACTL_GETCOLOR, COL_DIALOGHIGHLIGHTTEXT, (void *)highlight_color);
 	}
 
-	virtual int GetCmdLine(std::wstring &cmd)
+	int GetCmdLine(std::wstring &cmd) override
 	{
-		int len = (int)Info.PanelControl(INVALID_HANDLE_VALUE, FCTL_GETCMDLINE, 0, 0);
+		int len = (int)Info.PanelControl(INVALID_HANDLE_VALUE, FCTL_GETCMDLINE, 0, nullptr);
 		cmd.clear();
 		if (len > 0)
 		{
@@ -373,13 +362,13 @@ public:
 		return len;
 	}
 
-	virtual void SetCmdLine(const std::wstring & cmd)
+	void SetCmdLine(const std::wstring & cmd) override
 	{
 		Info.PanelControl(INVALID_HANDLE_VALUE, FCTL_SETCMDLINE, (int)cmd.size(), (void *)cmd.data());
 	}
 
 
-	virtual bool SettingsBegin()
+	bool SettingsBegin() override
 	{
 		FarSettingsCreate settings = { sizeof(FarSettingsCreate), MainGuid, INVALID_HANDLE_VALUE };
 		bool ret = false;
@@ -390,18 +379,18 @@ public:
 		}
 		else
 		{
-			settings_handle = NULL;
+			settings_handle = nullptr;
 			return false;
 		}
 	}
 	
-	virtual bool SettingsEnd()
+	bool SettingsEnd() override
 	{
-		Info.SettingsControl(settings_handle, SCTL_FREE, 0, 0);
+		Info.SettingsControl(settings_handle, SCTL_FREE, 0, nullptr);
 		return true;
 	}
 
-	virtual bool SettingsGet(const wchar_t *name, std::wstring *sval, unsigned long *ival)
+	bool SettingsGet(const wchar_t *name, std::wstring *sval, unsigned long *ival) override
 	{
 		bool ret = false;
 		if (settings_handle)
@@ -426,7 +415,7 @@ public:
 		return ret;
 	}
 
-	virtual bool SettingsSet(const wchar_t *name, const std::wstring *sval, const unsigned long *ival)
+	bool SettingsSet(const wchar_t *name, const std::wstring *sval, const unsigned long *ival) override
 	{
 		bool ret = false;
 		if (settings_handle)
@@ -443,7 +432,7 @@ public:
 		return ret;
 	}
 	
-	virtual const wchar_t *GetModuleName()
+	const wchar_t *GetModuleName() override
 	{
 		return Info.ModuleName;
 	}
@@ -464,12 +453,12 @@ CalcApi *CreateApiFar3(void *info)
 {
 	PluginStartupInfo *psi = (PluginStartupInfo *)info;
 
-	if (psi == NULL || psi->StructSize < sizeof(PluginStartupInfo) ||			// far container is too old
-		psi->AdvControl == NULL || psi->FSF == NULL)
-		return NULL;
+	if (psi == nullptr || psi->StructSize < sizeof(PluginStartupInfo) ||			// far container is too old
+		psi->AdvControl == nullptr || psi->FSF == nullptr)
+		return nullptr;
 
 	// check far version directly
-	VersionInfo ver;
+	VersionInfo ver{};
 	int ret = 0;
 	try
 	{
@@ -477,16 +466,16 @@ CalcApi *CreateApiFar3(void *info)
 	}
 	catch (...)
 	{
-		return NULL;
+		return nullptr;
 	}
 	
 	if (ret != 1 || ver.Major < 3 || ver.Major > 10)
-		return NULL;
+		return nullptr;
 
 	CalcApiFar3 *api = new CalcApiFar3();
 
-	if (api == NULL)
-		return NULL;
+	if (api == nullptr)
+		return nullptr;
 
 	memset(&api->Info, 0, sizeof(api->Info));
 	memmove(&api->Info, psi, (psi->StructSize > sizeof(api->Info)) ? sizeof(api->Info) : psi->StructSize);
