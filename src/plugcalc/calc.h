@@ -9,8 +9,6 @@
 #ifndef _CALC_H_
 #define _CALC_H_
 
-#define CALC_PLUGIN_VERSION L"3.23"
-
 enum
 {
 	CALC_DIALOG_MAIN,
