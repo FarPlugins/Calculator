@@ -493,7 +493,7 @@ void GetGlobalInfoFar3(void *ginfo, const wchar_t *name)
 	gInfo->Version = MAKEFARVERSION(PLUGIN_VER_MAJOR, PLUGIN_VER_MINOR, PLUGIN_VER_PATCH, 0, VS_RELEASE);
 	gInfo->Guid = MainGuid;
 	gInfo->Title = name;
-	gInfo->Description = name;
+	gInfo->Description = PLUGIN_DESC;
 	gInfo->Author = L"uncle-vunkis";
 }
 
