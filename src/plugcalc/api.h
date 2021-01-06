@@ -325,7 +325,6 @@ public:
 	
 };
 
-extern CalcApi *CreateApiFar2(void *info);
 extern CalcApi *CreateApiFar3(void *info);
 extern void GetGlobalInfoFar3(void *ginfo, const wchar_t *name);
 

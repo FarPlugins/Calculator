@@ -17,7 +17,6 @@
 
 CalcApi *api = NULL;
 CalcDialogFuncs *dlg_funcs = NULL;
-static bool far3 = false;
 
 // exports
 
@@ -26,8 +25,6 @@ extern "C"
 	void   WINAPI SetStartupInfoW(void *info);
 	void   WINAPI GetPluginInfoW(void *pinfo);
 	void   WINAPI GetGlobalInfoW(void *ginfo);
-	int    WINAPI GetMinFarVersionW();
-	HANDLE WINAPI OpenPluginW(int idx, INT_PTR);
 	HANDLE WINAPI OpenW(void *oinfo);
 	int    WINAPI ConfigureW(void *);
 }
@@ -39,7 +36,7 @@ void WINAPI SetStartupInfoW(void *info)
 {
 	if (api)
 		delete api;
-	api = (far3) ? CreateApiFar3(info) : CreateApiFar2(info);
+	api = CreateApiFar3(info);
 	if (api)
 	{
 		dlg_funcs = api->GetDlgFuncs();
@@ -50,12 +47,6 @@ void WINAPI SetStartupInfoW(void *info)
 void WINAPI GetPluginInfoW(void *pinfo)
 {
 	api->GetPluginInfo(pinfo, api->GetMsg(mName));
-}
-
-HANDLE WINAPI OpenPluginW(int OpenFrom, INT_PTR Item)
-{
-	CalcOpen(api->IsOpenedFromEditor(NULL, OpenFrom));
-	return INVALID_HANDLE_VALUE;
 }
 
 HANDLE WINAPI OpenW(void *oinfo)
@@ -72,12 +63,6 @@ int WINAPI ConfigureW(void *c)
 void WINAPI GetGlobalInfoW(void *ginfo)
 {
 	GetGlobalInfoFar3(ginfo, L"calculator");
-	far3 = true;
-}
-
-int WINAPI GetMinFarVersionW()
-{
-	return (2<<8)|(994<<16); // major=2, build=994
 }
 
 ////////////////////////////////////////////////////////////////////
