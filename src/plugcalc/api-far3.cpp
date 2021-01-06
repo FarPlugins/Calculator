@@ -395,7 +395,8 @@ public:
 		bool ret = false;
 		if (settings_handle)
 		{
-			FarSettingsItem item = {0};
+			FarSettingsItem item{0};
+            item.StructSize = sizeof(FarSettingsItem);
 			item.Name = name;
 			item.Type = (sval) ? FST_STRING : FST_QWORD;
 			if (Info.SettingsControl(settings_handle, SCTL_GET, 0, &item))
@@ -420,7 +421,8 @@ public:
 		bool ret = false;
 		if (settings_handle)
 		{
-			FarSettingsItem item = {0};
+			FarSettingsItem item{0};
+            item.StructSize = sizeof(FarSettingsItem);
 			item.Name = name;
 			item.Type = (sval) ? FST_STRING : FST_QWORD;
 			if (sval)
