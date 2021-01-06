@@ -9,6 +9,7 @@
 #define _CALC_API_H_
 
 #include <vector>
+#include <string>
 
 enum CalcDialogItemTypes
 {
