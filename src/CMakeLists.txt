@@ -3,7 +3,6 @@ project(Calculator CXX C)
 set(SRC_CPP
     plugcalc/api.cpp
     plugcalc/api.h
-    plugcalc/api-far2.cpp
     plugcalc/api-far3.cpp
     plugcalc/calc.cpp
     plugcalc/calc.h

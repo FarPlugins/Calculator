@@ -5,11 +5,15 @@
     *** belong to the original author (Cail Lomecb).
 
 --== Ver 3.24 ==--
-      * in progress
+      * Remove Far2 support
+      * Fixed: slow redraw in dialogs
+      * Fixed: settings didn`t save
+      * Now plugin on https://github.com/FarPlugins/Calculator
 	  
 	  
 --== Ver 3.23 ==--
       * Fixed: version
+
 
 --== Ver 3.22 ==--
     - General:
@@ -238,4 +242,4 @@ Functions with multiple arguments.
   Now Calc uses Far's colors.
   Added Calc Config.
   Normal Screen Saving.
-  Tested in Far 1.51 è 1.52.
+  Tested in Far 1.51 Ð¸ 1.52.

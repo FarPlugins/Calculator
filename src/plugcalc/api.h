@@ -106,7 +106,7 @@ struct CalcDialogItem
 class CalcMenuItem
 {
 public:
-	CalcMenuItem() { Text = NULL; Selected = 0; Checked = 0; Separator = 0; }
+	CalcMenuItem() { Text = nullptr; Selected = 0; Checked = 0; Separator = 0; }
 public:
 	const wchar_t *Text;
 	int  Selected;
@@ -295,7 +295,6 @@ public:
 	virtual void GetPluginInfo(void *pinfo, const wchar_t *name) = 0;
 	virtual bool IsOpenedFromEditor(void *oinfo, int OpenFrom) = 0;
 	virtual const wchar_t *GetMsg(int MsgId) = 0;
-	virtual int GetMinVersion(void *ver) = 0;
 	virtual CalcDialogFuncs *GetDlgFuncs() = 0;
 
 	virtual intptr_t Message(unsigned long Flags, const wchar_t *HelpTopic, const wchar_t * const *Items,
@@ -322,10 +321,8 @@ public:
 
 	virtual const wchar_t *GetModuleName() = 0;
 
-	
 };
 
-extern CalcApi *CreateApiFar2(void *info);
 extern CalcApi *CreateApiFar3(void *info);
 extern void GetGlobalInfoFar3(void *ginfo, const wchar_t *name);
 

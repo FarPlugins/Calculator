@@ -5,19 +5,18 @@
 //  to License (see /doc/license.txt for more information).
 //
 
-#include <stdio.h>
+#include <cstdio>
 #include <windows.h>
 
-#include <hashmap/hashmap.h>
+#include <hashmap/HashMap.h>
 
 #include "api.h"
 #include "calc.h"
 #include "messages.h"
 
 
-CalcApi *api = NULL;
-CalcDialogFuncs *dlg_funcs = NULL;
-static bool far3 = false;
+CalcApi *api = nullptr;
+CalcDialogFuncs *dlg_funcs = nullptr;
 
 // exports
 
@@ -26,8 +25,6 @@ extern "C"
 	void   WINAPI SetStartupInfoW(void *info);
 	void   WINAPI GetPluginInfoW(void *pinfo);
 	void   WINAPI GetGlobalInfoW(void *ginfo);
-	int    WINAPI GetMinFarVersionW();
-	HANDLE WINAPI OpenPluginW(int idx, INT_PTR);
 	HANDLE WINAPI OpenW(void *oinfo);
 	int    WINAPI ConfigureW(void *);
 }
@@ -37,9 +34,8 @@ extern "C"
 // FAR exports
 void WINAPI SetStartupInfoW(void *info)
 {
-	if (api)
-		delete api;
-	api = (far3) ? CreateApiFar3(info) : CreateApiFar2(info);
+    //TODO start on first call in OpenW, not in init
+	api = CreateApiFar3(info);
 	if (api)
 	{
 		dlg_funcs = api->GetDlgFuncs();
@@ -52,16 +48,10 @@ void WINAPI GetPluginInfoW(void *pinfo)
 	api->GetPluginInfo(pinfo, api->GetMsg(mName));
 }
 
-HANDLE WINAPI OpenPluginW(int OpenFrom, INT_PTR Item)
-{
-	CalcOpen(api->IsOpenedFromEditor(NULL, OpenFrom));
-	return INVALID_HANDLE_VALUE;
-}
-
 HANDLE WINAPI OpenW(void *oinfo)
 {
 	CalcOpen(api->IsOpenedFromEditor(oinfo, 0));
-	return NULL;
+	return nullptr;
 }
 
 int WINAPI ConfigureW(void *c)
@@ -72,12 +62,6 @@ int WINAPI ConfigureW(void *c)
 void WINAPI GetGlobalInfoW(void *ginfo)
 {
 	GetGlobalInfoFar3(ginfo, L"calculator");
-	far3 = true;
-}
-
-int WINAPI GetMinFarVersionW()
-{
-	return (2<<8)|(994<<16); // major=2, build=994
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +108,7 @@ static CALC_INT_PTR __stdcall dlgProc(DLGHANDLE hdlg, int msg, int param1, void 
 CalcDialog::CalcDialog()
 {
 	msg_tbl = dlg_funcs->GetMessageTable();
-	hdlg = NULL;
+	hdlg = nullptr;
 }
 
 CalcDialog::~CalcDialog()
