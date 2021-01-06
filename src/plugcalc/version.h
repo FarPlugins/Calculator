@@ -7,7 +7,7 @@
 #endif
 
 #define PLUGIN_VER_MAJOR 3
-#define PLUGIN_VER_MINOR 23
+#define PLUGIN_VER_MINOR 24
 #define PLUGIN_VER_PATCH 0
 #define PLUGIN_DESC L"Calculator plugin for FAR manager 2.0/3.0" PLATFORM
 #define PLUGIN_NAME L"Calculator"

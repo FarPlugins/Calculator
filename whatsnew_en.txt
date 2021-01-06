@@ -4,7 +4,10 @@
     *** by another author. All copyrights of the code, except the new modifications
     *** belong to the original author (Cail Lomecb).
 
-
+--== Ver 3.24 ==--
+      * in progress
+	  
+	  
 --== Ver 3.23 ==--
       * Fixed: version
 
