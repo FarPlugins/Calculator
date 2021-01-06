@@ -62,7 +62,7 @@ configure_file(res/calcr.hlf.in res/calcr.hlf)
 install(DIRECTORY res/
     DESTINATION .
     PATTERN "*.in" EXCLUDE)
-install(FILES whatsnew_en.txt whatsnew_ru.txt readme.txt
+install(FILES whatsnew_en.txt whatsnew_ru.txt
     ${CMAKE_CURRENT_BINARY_DIR}/res/file_id.diz
     ${CMAKE_CURRENT_BINARY_DIR}/res/calce.hlf
     ${CMAKE_CURRENT_BINARY_DIR}/res/calcr.hlf
