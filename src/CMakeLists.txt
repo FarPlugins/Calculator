@@ -118,3 +118,10 @@ set_target_properties(Calculator
     LINK_FLAGS "${LINK_FLAGS}"
     OUTPUT_NAME "calc"
     )
+
+#====================================================
+# install
+#====================================================
+install(TARGETS Calculator RUNTIME DESTINATION .)
+install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> ${CMAKE_CURRENT_BINARY_DIR}/calc.map DESTINATION .)
+

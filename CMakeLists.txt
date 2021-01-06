@@ -22,3 +22,8 @@ if ("$ENV{PLATFORM}" MATCHES "x64")
 endif ()
 
 add_subdirectory(src)
+
+#====================================================
+# install
+#====================================================
+install(DIRECTORY res/ DESTINATION .)
