@@ -1,106 +1,37 @@
-// Microsoft Visual C++ generated resource script.
-//
-#include "resource.h"
+#pragma code_page(65001)
+#include <windows.h>
+#include "version.h"
 
-#define APSTUDIO_READONLY_SYMBOLS
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 2 resource.
-//
-#define APSTUDIO_HIDDEN_SYMBOLS
-#include "windows.h"
-#undef APSTUDIO_HIDDEN_SYMBOLS
-#include "winver.h"
-
-/////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
-
-/////////////////////////////////////////////////////////////////////////////
-// Russian (Russia) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,0
- PRODUCTVERSION 1,0,0,0
- FILEFLAGSMASK 0x3fL
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS 0
+
 #ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
+| VS_FF_PRERELEASE | VS_FF_DEBUG
 #endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
+
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+
+FILEVERSION PLUGIN_VER_MAJOR,PLUGIN_VER_MINOR,PLUGIN_VER_PATCH,0
+PRODUCTVERSION PLUGIN_VER_MAJOR,PLUGIN_VER_MINOR,PLUGIN_VER_PATCH,0
+
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904b0"
+        BLOCK "040904B0"
         BEGIN
-            VALUE "FileDescription", "Calculator plugin for FAR manager 2.0/3.0"
-            VALUE "FileVersion", "3.23"
-            VALUE "InternalName", "Calc"
-            VALUE "LegalCopyright", "Copyright (C) 1999-2001, Cail Lomecb; (C) 2009-2012 uncle-vunkis"
-            VALUE "LegalTrademarks", "FAR (File and archive manager) is copyright (C) 1996-99 Eugene Roshal"
-            VALUE "Original Filename", "Calc"
-            VALUE "ProductName", "Calculator plugin for FAR manager 2.0/3.0"
-            VALUE "ProductVersion", "3.23"
+            VALUE "FileDescription", PLUGIN_DESC
+            VALUE "FileVersion", PLUGIN_VERSION
+            VALUE "LegalCopyright", PLUGIN_COPYRIGHT
+            VALUE "OriginalFilename", PLUGIN_FILENAME
+            VALUE "ProductName", PLUGIN_NAME
+            VALUE "ProductVersion", PLUGIN_VERSION
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x409, 1200
+        VALUE "Translation", 0x0409, 1200
     END
 END
-
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "#include ""windows.h""\r\n"
-    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "#include ""winver.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Russian (Russia) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
-

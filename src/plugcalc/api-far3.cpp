@@ -11,6 +11,7 @@
 
 #include "api.h"
 #include "calc.h"
+#include "version.h"
 
 #include <farplugin/3.0/plugin.hpp>
 #include <farplugin/3.0/farcolor.hpp>
@@ -498,7 +499,7 @@ void GetGlobalInfoFar3(void *ginfo, const wchar_t *name)
 	GlobalInfo *gInfo = (GlobalInfo *)ginfo;
 	gInfo->StructSize = sizeof(GlobalInfo);
 	gInfo->MinFarVersion = MAKEFARVERSION(3, 0, 0, 2927, VS_RELEASE);
-	gInfo->Version = MAKEFARVERSION(3, 23, 0, 0, VS_RELEASE);
+	gInfo->Version = MAKEFARVERSION(PLUGIN_VER_MAJOR, PLUGIN_VER_MINOR, PLUGIN_VER_PATCH, 0, VS_RELEASE);
 	gInfo->Guid = MainGuid;
 	gInfo->Title = name;
 	gInfo->Description = name;

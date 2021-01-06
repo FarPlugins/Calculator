@@ -17,6 +17,7 @@ set(SRC_CPP
     plugcalc/sarg.h
     plugcalc/syntax.cpp
     plugcalc/syntax.h
+    plugcalc/version.h
     shared/hashmap/HashMap.h
     shared/mathexpression/MathExpressionBase.h
     shared/sgml/sgml.cpp
