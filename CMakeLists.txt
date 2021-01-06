@@ -24,6 +24,21 @@ endif ()
 add_subdirectory(src)
 
 #====================================================
+# build misc files
+#====================================================
+# used @@ESCAPE and ESCAPE@@ for escape @ in files
+configure_file(res/file_id.diz.in res/file_id.diz)
+configure_file(res/calce.hlf.in res/calce.hlf)
+configure_file(res/calcr.hlf.in res/calcr.hlf)
+
+#====================================================
 # install
 #====================================================
-install(DIRECTORY res/ DESTINATION .)
+install(DIRECTORY res/
+    DESTINATION .
+    PATTERN "*.in" EXCLUDE)
+install(FILES whatsnew_en.txt whatsnew_ru.txt readme.txt
+    ${CMAKE_CURRENT_BINARY_DIR}/res/file_id.diz
+    ${CMAKE_CURRENT_BINARY_DIR}/res/calce.hlf
+    ${CMAKE_CURRENT_BINARY_DIR}/res/calcr.hlf
+    DESTINATION .)
