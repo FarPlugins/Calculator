@@ -238,4 +238,4 @@ Functions with multiple arguments.
   Now Calc uses Far's colors.
   Added Calc Config.
   Normal Screen Saving.
-  Tested in Far 1.51 è 1.52.
+  Tested in Far 1.51 Ð¸ 1.52.
