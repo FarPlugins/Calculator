@@ -45,6 +45,9 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   # CMAKE_CXX_FLAGS_DEBUG= /MDd /Zi /Ob0 /Od /RTC1
   # CMAKE_CXX_FLAGS_RELEASE= /MD /O2 /Ob2 /DNDEBUG
 
+  # for replace /Ob2  https://gitlab.kitware.com/cmake/cmake/-/issues/19084
+  string(REGEX REPLACE "/Ob2" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+
   if (CMAKE_BUILD_TYPE MATCHES Debug)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebug")
   else ()
@@ -52,8 +55,9 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   endif ()
 
   set(FLAGS_CXX_DEFAULT /Zi)
-  set(FLAGS_CXX_RELEASE /W3 /Oi /Ot /GL /GS-)
+  set(FLAGS_CXX_RELEASE /W3 /Oi /Ot /GL /GS- /Ob1 /GF /GR)
   set(FLAGS_CXX_DEBUG /W4 /GS)
+
 
   set(LINK_FLAGS "/MAP /MANIFEST:NO")
 
@@ -67,9 +71,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   if (IS_x64_PLATFORM)
     set(CMAKE_RC_FLAGS -D_WIN64)
     add_definitions(-DTTMATH_NOASM -DTTMATH_PLATFORM64)
+  else ()
+    add_definitions(-DWINDOWS_IGNORE_PACKING_MISMATCH)
   endif ()
 
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS -DCALC_EXPORTS -DTTMATH_RELEASE)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -DTTMATH_RELEASE)
 
 endif ()
 
@@ -88,7 +94,6 @@ add_library(Calculator SHARED ${SRC_FILES})
 target_include_directories(Calculator
     PRIVATE ./shared
     )
-
 
 set_target_properties(Calculator PROPERTIES
     CXX_STANDARD 11
@@ -111,5 +116,5 @@ endif ()
 set_target_properties(Calculator
     PROPERTIES
     LINK_FLAGS "${LINK_FLAGS}"
+    OUTPUT_NAME "calc"
     )
-
