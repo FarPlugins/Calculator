@@ -9,7 +9,7 @@
 #define PLUGIN_VER_MAJOR 3
 #define PLUGIN_VER_MINOR 24
 #define PLUGIN_VER_PATCH 0
-#define PLUGIN_DESC L"Calculator plugin for FAR manager 2.0/3.0" PLATFORM
+#define PLUGIN_DESC L"Calculator plugin for FAR manager 3.0" PLATFORM
 #define PLUGIN_NAME L"Calculator"
 #define PLUGIN_FILENAME L"calc.dll"
 #define PLUGIN_COPYRIGHT L"© Igor Russkih, 1999-2001. © 2009-2012, uncle-vunkis. © FarPlugins Team, 2020 -"
