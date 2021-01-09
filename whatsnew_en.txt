@@ -4,6 +4,10 @@
     *** by another author. All copyrights of the code, except the new modifications
     *** belong to the original author (Cail Lomecb).
 
+--== Ver 3.25 ==--
+      * Support Windows 2000 and WindowsXP added
+
+
 --== Ver 3.24 ==--
       * Remove Far2 support
       * Fixed: slow redraw in dialogs
