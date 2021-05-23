@@ -252,7 +252,7 @@ public:
 	{
 		struct PluginInfo *pInfo = (struct PluginInfo *)pinfo;
 		pInfo->StructSize = sizeof(*pInfo);
-		pInfo->Flags = PF_EDITOR | PF_VIEWER;
+		pInfo->Flags = PF_EDITOR | PF_VIEWER | PF_DIALOG;
 
 		PluginMenuStrings = name;
 		pInfo->PluginMenu.Guids = &PMenuGuid;
