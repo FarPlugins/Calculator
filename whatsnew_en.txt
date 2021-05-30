@@ -4,6 +4,13 @@
     *** by another author. All copyrights of the code, except the new modifications
     *** belong to the original author (Cail Lomecb).
 
+--== Ver 3.26 ==--
+      * Fixed: incorrect drawing disabled edittext in FAR versions 5788 and newer
+      * Improvement: call plugin from dialogs
+      * Changed: function round = _floor(op0+0.5)
+      * Changed: value of inch = 2.54
+      
+
 --== Ver 3.25 ==--
       * Support Windows 2000 and WindowsXP added
 
