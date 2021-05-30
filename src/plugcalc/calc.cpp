@@ -987,7 +987,6 @@ public:
 			CalcColor clrs[3];
 			api->GetDlgColors(&clrs[0], &clrs[1], &clrs[2]);
 			icolors->Colors[0] = clrs[0];
-			icolors->Colors[2] = clrs[1];
 			return 0;
 		}
 		return -1;
