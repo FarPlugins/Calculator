@@ -38,7 +38,7 @@ class CalcAddonPart
 public:
 	CalcAddonPart() 
 	{ 
-		parser = NULL; 
+		parser = nullptr;
 	}
 	CalcAddonPart(const CalcAddonPart & p);
 
@@ -209,6 +209,6 @@ protected:
 };
 
 /// if type_idx >= 0 then it's index to addons, or type enum if < 0 
-wchar_t *convertToString(const SArg & val, int type_idx, int num_lim = 0, bool append_suffix = false, bool pad_zeroes = true, bool group_delim = true, CALC_ERROR *error_code = NULL);
+wchar_t *convertToString(const SArg & val, int type_idx, int num_lim = 0, bool append_suffix = false, bool pad_zeroes = true, bool group_delim = true, CALC_ERROR *error_code = nullptr);
 
 #endif // of CALC_NEWPARSE_H

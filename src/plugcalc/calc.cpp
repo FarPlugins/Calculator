@@ -27,9 +27,9 @@
 int regAlign, regEdit, regCheck;
 bool badFar = true;
 
-wchar_t *coreReturn = NULL;
+wchar_t *coreReturn = nullptr;
 
-CalcDialogItem *cur_dlg_items = NULL;
+CalcDialogItem *cur_dlg_items = nullptr;
 int cur_dlg_items_num = 0, cur_dlg_id = 0, cur_dlg_items_numedits = 0;
 int cur_dlg_need_recalc = 0;
 CalcCoord cur_dlg_dlg_size;
@@ -65,7 +65,7 @@ static const wchar_t types[][20] =
 };
 
 
-CalcParser *parser = NULL;
+CalcParser *parser = nullptr;
 
 int calc_error = 0;
 int curRadio = 4;
@@ -75,7 +75,7 @@ int curRadio = 4;
 void CalcStartup()
 {
 	badFar = false;
-	srand((unsigned)time(0));
+	srand((unsigned)time(nullptr));
 	InitConfig();
 }
 
@@ -85,7 +85,7 @@ bool CalcOpen(bool editor)
 	{
 		// XXX:
 		const wchar_t *errver[] = {L"Error", L"Bad FAR version. Need >= Far 2.00", L"die" };
-		api->Message(0, NULL, &errver[0], 3, 1);
+		api->Message(0, nullptr, &errver[0], 3, 1);
 		return false;
 	}
 	InitDynamicData();
@@ -117,7 +117,7 @@ bool CalcConfig()
 // loading settings
 void InitDynamicData()
 {
-	srand((unsigned)time(0));
+	srand((unsigned)time(nullptr));
 
 	LoadConfig();
 	CheckConfig();
@@ -137,8 +137,7 @@ void InitDynamicData()
 
 	memset(&addons_info, 0, sizeof(addons_info));
 
-	if (parser != NULL)
-		delete parser;
+	delete parser;
 	parser = new CalcParser();
 
 	CalcParser::ProcessAddons();
@@ -148,10 +147,10 @@ void InitDynamicData()
 
 void DeInitDynamicData()
 {
-	if (parser != NULL)
+	if (parser != nullptr)
 	{
 		delete parser;
-		parser = NULL;
+		parser = nullptr;
 	}
 }
 
@@ -159,7 +158,7 @@ void DeInitDynamicData()
 // editor dialog
 void EditorDialog()
 {
-	wchar_t *Text = NULL;
+	wchar_t *Text = nullptr;
 	int s, e, i;
 	bool After = true, skip_eq = false;
 	int num_fmi = 1 + CalcParser::main_addons_num;
@@ -171,7 +170,7 @@ void EditorDialog()
 		fmi[i + 1].Text = CalcParser::addons[i].name.c_str();
 	}
 
-	i = (int)api->Menu(-1, -1, num_fmi, CALC_FMENU_WRAPMODE, L"action", NULL, fmi);
+	i = (int)api->Menu(-1, -1, num_fmi, CALC_FMENU_WRAPMODE, L"action", nullptr, fmi);
 	
 	if (i == -1) 
 		return;
@@ -182,7 +181,7 @@ void EditorDialog()
 		{
 			api->EditorInsert(coreReturn);
 			free(coreReturn);
-			coreReturn = NULL;
+			coreReturn = nullptr;
 		}
 		return;
 	}
@@ -227,7 +226,7 @@ void EditorDialog()
 		SArg Res = parser->Parse(Text, props.case_sensitive != 0);
 		free(Text);
   
-		Text = convertToString(Res, i - 1, 0, false, props.pad_zeroes != 0, false, NULL);
+		Text = convertToString(Res, i - 1, 0, false, props.pad_zeroes != 0, false, nullptr);
 		if (Text)
 		{
 			if (After && !skip_eq) 
@@ -278,7 +277,7 @@ void ShellDialog()
 			api->SetCmdLine(cmd);
 		}
 		free(coreReturn);
-		coreReturn = NULL;
+		coreReturn = nullptr;
 	}
 }
 
@@ -417,7 +416,7 @@ public:
 		if (coreReturn)
 		{
 			free(coreReturn);
-			coreReturn = NULL;
+			coreReturn = nullptr;
 		}
 		return TRUE;
 	}
@@ -499,7 +498,7 @@ public:
 			if (de->Type) id++;
 			if (id == param1) 
 			{
-				if (de->input != NULL && de->input->parser != NULL)
+				if (de->input != nullptr && de->input->parser != nullptr)
 				{
 					SArg args[2];
 					args[0] = res;
@@ -583,7 +582,7 @@ public:
   
 			SArg res = parser->Parse(str.c_str(), props.case_sensitive != 0);
 
-			str = convertToString(res, CALC_CONV_ENTER, props.result_length, false, props.pad_zeroes != 0, false, NULL);
+			str = convertToString(res, CALC_CONV_ENTER, props.result_length, false, props.pad_zeroes != 0, false, nullptr);
 
 			if (!props.auto_update)
 			{
@@ -593,7 +592,7 @@ public:
 			}
 
 			SetText(param1, str);
-			OnGotFocus(param1, NULL);
+			OnGotFocus(param1, nullptr);
 
 			return TRUE;
 		}
@@ -660,7 +659,7 @@ void ShowUnitsDialog(int no)
 	units.Init(CALC_DIALOG_UNITS, -1, -1, cur_dlg_dlg_size.X, cur_dlg_dlg_size.Y, L"Contents", dialog, dsize);
 	units.Run();
 
-	cur_dlg_items = NULL;
+	cur_dlg_items = nullptr;
 
 	for (i = 0;  i < dsize; i++)
   		free((void *)dialog[i].PtrData);
@@ -709,7 +708,7 @@ public:
 		if (coreReturn)
 		{
 			free(coreReturn);
-			coreReturn = NULL;
+			coreReturn = nullptr;
 		}
 		return FALSE;
 	}
@@ -761,8 +760,8 @@ public:
 		AddHistory(CALC_EDIT_ID, str);
 		CalcRect sr;
 		GetDlgRect(&sr);
-		//api->SettingsSet(L"calcX", NULL, sr.Left);
-		//api->SettingsSet(L"calcY", NULL, sr.Top);
+		//api->SettingsSet(L"calcX", nullptr, sr.Left);
+		//api->SettingsSet(L"calcY", nullptr, sr.Top);
 		return -1;
 	}
 
@@ -789,7 +788,7 @@ public:
 		}
 		if (ir->Event.KeyEvent.wVirtualKeyCode == VK_RETURN)
 		{
-			CalcDialogItem *force_update_item = NULL;
+			CalcDialogItem *force_update_item = nullptr;
 			std::wstring str;
 			GetText(CALC_EDIT_ID, str);
 
@@ -836,8 +835,8 @@ public:
 			wchar_t *text = L"";
 			if (loc_Radio >= 0)
 			{
-				text = convertToString(res, loc_Radio, props.result_length, true, props.pad_zeroes != 0, false, NULL);
-				if (text == NULL)
+				text = convertToString(res, loc_Radio, props.result_length, true, props.pad_zeroes != 0, false, nullptr);
+				if (text == nullptr)
 				{
 					loc_Radio = -1;
 					text = L"";
@@ -1101,8 +1100,8 @@ SDialogElem::SDialogElem()
 {
 	Next = 0;
 	addon_idx = -1;
-	input = NULL;
-	scale_expr = NULL;
+	input = nullptr;
+	scale_expr = nullptr;
 }
 
 SDialogElem::~SDialogElem()

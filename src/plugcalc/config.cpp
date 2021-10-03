@@ -34,7 +34,7 @@ enum CALC_PARAM_CHECK_TYPE
 static const struct
 {
 	int *ival;
-	wchar_t *sval;	// if sval != NULL then (int)ival = max strlen
+	wchar_t *sval;	// if sval != nullptr then (int)ival = max strlen
 
 	const wchar_t *reg_name;
 	const wchar_t *def_value;
@@ -42,31 +42,31 @@ static const struct
 	CALC_PARAM_CHECK_TYPE check_type;
 } param_table[] =
 {
-	{ &props.auto_update, NULL, L"autoUpdate", L"1", CALC_PARAM_CHECK_BOOL },
-	{ &props.case_sensitive, NULL, L"caseSensitive", L"0", CALC_PARAM_CHECK_BOOL },
-	{ &props.pad_zeroes, NULL, L"padZeroes", L"1", CALC_PARAM_CHECK_BOOL },
-	/*{ &props.right_align, NULL, L"rightAlign", L"0", CALC_PARAM_CHECK_BOOL },*/
+	{ &props.auto_update, nullptr, L"autoUpdate", L"1", CALC_PARAM_CHECK_BOOL },
+	{ &props.case_sensitive, nullptr, L"caseSensitive", L"0", CALC_PARAM_CHECK_BOOL },
+	{ &props.pad_zeroes, nullptr, L"padZeroes", L"1", CALC_PARAM_CHECK_BOOL },
+	/*{ &props.right_align, nullptr, L"rightAlign", L"0", CALC_PARAM_CHECK_BOOL },*/
 
-	{ &props.history_hide, NULL, L"historyHide", L"1", CALC_PARAM_CHECK_RADIO },
-	{ &props.history_above, NULL, L"historyAbove", L"0", CALC_PARAM_CHECK_RADIO },
-	{ &props.history_below, NULL, L"historyBelow", L"0", CALC_PARAM_CHECK_RADIO },
-	{ &props.history_lines, NULL, L"historyLines", L"8", CALC_PARAM_CHECK_LINES },
-	{ &props.autocomplete, NULL, L"autoComplete", L"0", CALC_PARAM_CHECK_BOOL },
+	{ &props.history_hide, nullptr, L"historyHide", L"1", CALC_PARAM_CHECK_RADIO },
+	{ &props.history_above, nullptr, L"historyAbove", L"0", CALC_PARAM_CHECK_RADIO },
+	{ &props.history_below, nullptr, L"historyBelow", L"0", CALC_PARAM_CHECK_RADIO },
+	{ &props.history_lines, nullptr, L"historyLines", L"8", CALC_PARAM_CHECK_LINES },
+	{ &props.autocomplete, nullptr, L"autoComplete", L"0", CALC_PARAM_CHECK_BOOL },
 
-	{ &props.use_regional, NULL, L"useRegional", L"0", CALC_PARAM_CHECK_BOOL },
+	{ &props.use_regional, nullptr, L"useRegional", L"0", CALC_PARAM_CHECK_BOOL },
 	{ (int *)sizeof(props.decimal_point), props.decimal_point, L"decimalPoint", L".", CALC_PARAM_CHECK_DECIMAL },
 	{ (int *)sizeof(props.args), props.args, L"Args", L",", CALC_PARAM_CHECK_ARGS },
-	{ &props.use_delim, NULL, L"useDelim", L"0", CALC_PARAM_CHECK_BOOL },
+	{ &props.use_delim, nullptr, L"useDelim", L"0", CALC_PARAM_CHECK_BOOL },
 	{ (int *)sizeof(props.digit_delim), props.digit_delim, L"digitDelim", L"'", CALC_PARAM_CHECK_DELIM },
 
 	// registry-only
-	{ &props.max_period, NULL, L"maxPeriod", L"10", CALC_PARAM_CHECK_PERIOD },
-	{ &props.result_length, NULL, L"resultLength", L"128", CALC_PARAM_CHECK_LENGTH },
-	{ &props.rep_fraction_max_start, NULL, L"repFractionMaxStart", L"32", CALC_PARAM_CHECK_FRAC },
-	{ &props.rep_fraction_max_period, NULL, L"repFractionMaxPeriod", L"128", CALC_PARAM_CHECK_FRAC },
-	{ &props.cont_fraction_max, NULL, L"contFractionMax", L"64", CALC_PARAM_CHECK_FRAC },
+	{ &props.max_period, nullptr, L"maxPeriod", L"10", CALC_PARAM_CHECK_PERIOD },
+	{ &props.result_length, nullptr, L"resultLength", L"128", CALC_PARAM_CHECK_LENGTH },
+	{ &props.rep_fraction_max_start, nullptr, L"repFractionMaxStart", L"32", CALC_PARAM_CHECK_FRAC },
+	{ &props.rep_fraction_max_period, nullptr, L"repFractionMaxPeriod", L"128", CALC_PARAM_CHECK_FRAC },
+	{ &props.cont_fraction_max, nullptr, L"contFractionMax", L"64", CALC_PARAM_CHECK_FRAC },
 
-	{ NULL, NULL, L"", 0, CALC_PARAM_CHECK_BOOL },
+	{ nullptr, nullptr, L"", 0, CALC_PARAM_CHECK_BOOL },
 };
 
 static const struct 
@@ -79,38 +79,38 @@ static const struct
 	wchar_t			    *prop_svalue;
 } dlgItems[] = 
 {
-	{ CALC_DI_DOUBLEBOX,    3,  1, 54, 14, 0, mConfigName, NULL, NULL },
-	{ CALC_DI_CHECKBOX,     5, -1,  0,  0, CALC_DIF_FOCUS, mConfigShowResults, &props.auto_update, NULL },
-	{ CALC_DI_CHECKBOX,     5, -1,  0,  0, 0, mConfigCaseSensitive, &props.case_sensitive, NULL },
+	{ CALC_DI_DOUBLEBOX,    3,  1, 54, 14, 0, mConfigName, nullptr, nullptr },
+	{ CALC_DI_CHECKBOX,     5, -1,  0,  0, CALC_DIF_FOCUS, mConfigShowResults, &props.auto_update, nullptr },
+	{ CALC_DI_CHECKBOX,     5, -1,  0,  0, 0, mConfigCaseSensitive, &props.case_sensitive, nullptr },
 	
-	{ CALC_DI_CHECKBOX,     5, -1,  0,  0, 0, mConfigPadZeroes, &props.pad_zeroes, NULL },
+	{ CALC_DI_CHECKBOX,     5, -1,  0,  0, 0, mConfigPadZeroes, &props.pad_zeroes, nullptr },
 #if 0
-	{ CALC_DI_CHECKBOX,     5, -1,  0,  0, 0, mConfigRightAligned, &props.right_align, NULL },
+	{ CALC_DI_CHECKBOX,     5, -1,  0,  0, 0, mConfigRightAligned, &props.right_align, nullptr },
 
-	{ CALC_DI_TEXT,        41,  0,  0,  0, CALC_DIF_DISABLE, mConfigMaxPeriod, NULL, NULL },
-	{ CALC_DI_FIXEDIT,     53,  0, 55,  0, CALC_DIF_DISABLE, 0, &props.max_period, NULL },
+	{ CALC_DI_TEXT,        41,  0,  0,  0, CALC_DIF_DISABLE, mConfigMaxPeriod, nullptr, nullptr },
+	{ CALC_DI_FIXEDIT,     53,  0, 55,  0, CALC_DIF_DISABLE, 0, &props.max_period, nullptr },
 #endif
 
-	{ CALC_DI_TEXT,         5, -1,  0,  0, CALC_DIF_BOXCOLOR|CALC_DIF_SEPARATOR, mConfigHistory, NULL, NULL },
+	{ CALC_DI_TEXT,         5, -1,  0,  0, CALC_DIF_BOXCOLOR|CALC_DIF_SEPARATOR, mConfigHistory, nullptr, nullptr },
 	
-	{ CALC_DI_RADIOBUTTON,  5, -1,  0,  0, CALC_DIF_GROUP, mConfigHide, &props.history_hide, NULL },
-	{ CALC_DI_RADIOBUTTON, 19,  0,  0,  0, CALC_DIF_DISABLE, mConfigShowAbove, &props.history_above, NULL },
-	{ CALC_DI_RADIOBUTTON, 37,  0,  0,  0, CALC_DIF_DISABLE, mConfigShowBelow, &props.history_below, NULL },
+	{ CALC_DI_RADIOBUTTON,  5, -1,  0,  0, CALC_DIF_GROUP, mConfigHide, &props.history_hide, nullptr },
+	{ CALC_DI_RADIOBUTTON, 19,  0,  0,  0, CALC_DIF_DISABLE, mConfigShowAbove, &props.history_above, nullptr },
+	{ CALC_DI_RADIOBUTTON, 37,  0,  0,  0, CALC_DIF_DISABLE, mConfigShowBelow, &props.history_below, nullptr },
 	
-	{ CALC_DI_FIXEDIT,      5, -1,  7,  0, CALC_DIF_DISABLE, 0, &props.history_lines, NULL },
-	{ CALC_DI_TEXT,         9,  0,  0,  0, CALC_DIF_DISABLE, mConfigLines, NULL, NULL },
-	{ CALC_DI_CHECKBOX,    19,  0,  0,  0, 0, mConfigAutocomplete, &props.autocomplete, NULL },
+	{ CALC_DI_FIXEDIT,      5, -1,  7,  0, CALC_DIF_DISABLE, 0, &props.history_lines, nullptr },
+	{ CALC_DI_TEXT,         9,  0,  0,  0, CALC_DIF_DISABLE, mConfigLines, nullptr, nullptr },
+	{ CALC_DI_CHECKBOX,    19,  0,  0,  0, 0, mConfigAutocomplete, &props.autocomplete, nullptr },
 
-	{ CALC_DI_TEXT,         5, -1,  0,  0, CALC_DIF_BOXCOLOR|CALC_DIF_SEPARATOR, mConfigDelimiters, NULL, NULL },
+	{ CALC_DI_TEXT,         5, -1,  0,  0, CALC_DIF_BOXCOLOR|CALC_DIF_SEPARATOR, mConfigDelimiters, nullptr, nullptr },
 	
-	{ CALC_DI_TEXT,         5, -1,  0,  0, 0, mConfigDecimalSymbol, NULL, NULL },
+	{ CALC_DI_TEXT,         5, -1,  0,  0, 0, mConfigDecimalSymbol, nullptr, nullptr },
 	{ CALC_DI_FIXEDIT,     22,  0, 22,  0 , 0, 0, (int *)sizeof(props.decimal_point), props.decimal_point },
-	{ CALC_DI_CHECKBOX,    25,  0,  0,  0, 0, mConfigDigitDelimiter, &props.use_delim, NULL },
+	{ CALC_DI_CHECKBOX,    25,  0,  0,  0, 0, mConfigDigitDelimiter, &props.use_delim, nullptr },
 	{ CALC_DI_FIXEDIT,     51,  0, 51,  0, 0, 0, (int *)sizeof(props.digit_delim), props.digit_delim },
 
-	{ CALC_DI_TEXT,         5, -1,  0,  0, 0, mConfigArguments, NULL, NULL },
+	{ CALC_DI_TEXT,         5, -1,  0,  0, 0, mConfigArguments, nullptr, nullptr },
 	{ CALC_DI_FIXEDIT,     22,  0, 22,  0, 0, 0, (int *)sizeof(props.args), props.args },
-	{ CALC_DI_CHECKBOX,    25,  0,  0,  0, 0, mConfigUseRegional, &props.use_regional, NULL },
+	{ CALC_DI_CHECKBOX,    25,  0,  0,  0, 0, mConfigUseRegional, &props.use_regional, nullptr },
 	
 	{ CALC_DI_TEXT,         5, -1,  0,  0, CALC_DIF_BOXCOLOR|CALC_DIF_SEPARATOR, 0, NULL, NULL },
 	

@@ -31,18 +31,18 @@ void MathOpNameCallback(std::wstring name)
 }
 
 
-PSyntax CalcParser::Consts = NULL;
-PVars CalcParser::Vars   = NULL;
-PSyntax CalcParser::Ops    = NULL;
-PSyntax CalcParser::Functs = NULL;
-PSyntax CalcParser::Addons = NULL;
-PSyntax CalcParser::Numerals = NULL;
+PSyntax CalcParser::Consts = nullptr;
+PVars CalcParser::Vars   = nullptr;
+PSyntax CalcParser::Ops    = nullptr;
+PSyntax CalcParser::Functs = nullptr;
+PSyntax CalcParser::Addons = nullptr;
+PSyntax CalcParser::Numerals = nullptr;
 std::vector<CalcAddon> CalcParser::addons;
 unsigned CalcParser::main_addons_num = 0;
 wchar_t CalcParser::delim_decimal, CalcParser::delim_args, CalcParser::delim_digit;
 
 ag::hash_map<std::wstring, CalcParser *, StrHashFunc> CalcParser::user_bin_ops, CalcParser::user_un_ops;
-CalcParser::UserFunctionList *CalcParser::user_funcs = NULL;
+CalcParser::UserFunctionList *CalcParser::user_funcs = nullptr;
 ttmath::Conv CalcParser::from_convs[17], CalcParser::to_convs[17];
 
 CalcParser::FunctionList CalcParser::allFunctions;
@@ -63,12 +63,12 @@ CalcAddonPart::CalcAddonPart(const CalcAddonPart & p)
 {
 	expr = p.expr;
 	str_pos = p.str_pos;
-	parser = (p.parser != NULL) ? new CalcParser(*p.parser) : NULL;
+	parser = (p.parser != nullptr) ? new CalcParser(*p.parser) : nullptr;
 }
 
 CalcAddonPart::~CalcAddonPart()
 {
-	if (parser != NULL)
+	if (parser != nullptr)
 		delete parser;
 }
 
@@ -184,7 +184,7 @@ bool CalcParser::AddAll(bool add_user_ops_and_funcs)
 		{ SArg::to_double, L"_double", 1 },
 		{ SArg::to_float, L"_float", 1 },
 		
-		{ NULL, L"", 0 }
+		{ nullptr, L"", 0 }
 	};
 
 	int i;
@@ -224,7 +224,7 @@ bool CalcParser::AddAll(bool add_user_ops_and_funcs)
 
 		if (pnum->re)
 			trex_free(pnum->re);
-		const TRexChar *err = NULL;
+		const TRexChar *err = nullptr;
 		if (nam[0] == '/' && nam[nam.size() - 1] == '/')
 			nam = nam.substr(1, nam.size() - 2);
 		pnum->re = trex_compile(nam.c_str(), &err);
@@ -363,18 +363,18 @@ bool CalcParser::AddAll(bool add_user_ops_and_funcs)
 		while (func)
 		{
 			CalcParser *p = new CalcParser();
-			if (p != NULL)
+			if (p != nullptr)
 			{
 				// check for num. args
 				int num_args;
 				p->func_name = func->name;
-				if (func->mean != NULL)
+				if (func->mean != nullptr)
 				{
 					for (num_args = 0; ; num_args++)
 					{
 						wchar_t arg[5];
 						swprintf(arg, L"op%d", num_args);
-						if (wcsstr(func->mean, arg) == NULL)
+						if (wcsstr(func->mean, arg) == nullptr)
 							break;
 						p->add_argument(arg, num_args);
 					}
@@ -486,11 +486,11 @@ bool CalcParser::parse_number(SArg *value, const wchar_t *curpos, wchar_t **endp
 	PSyntax tmp = Numerals;
 	int max_match = 0;
 	Big tmpbig;
-	wchar_t *tmpend = NULL;
+	wchar_t *tmpend = nullptr;
 	while (tmp)
 	{
 		res = false;
-		if (tmp->re == NULL)
+		if (tmp->re == nullptr)
 		{
 			tmp = tmp->next;
 			continue;
@@ -698,7 +698,7 @@ void CalcAddonPart::Parse(bool no_args)
 	if (!ret || parser->math_error != ERR_OK)
 	{
 		delete parser;
-		parser = NULL;
+		parser = nullptr;
 	}
 }
 
@@ -716,7 +716,7 @@ bool CalcParser::ProcessAddons()
 	}
 
 	const wchar_t *submask = L"\\{([^\\{\\}]+?)\\}";
-	const TRexChar *err = NULL;
+	const TRexChar *err = nullptr;
 	TRex *re = trex_compile(submask, &err);
 	TRexMatch sm;
 
@@ -800,7 +800,7 @@ bool CalcParser::ProcessDialogData()
 				if (de->scale_expr->parser)
 					de->scale = de->scale_expr->parser->eval().GetBig();
 				delete de->scale_expr;
-				de->scale_expr = NULL;
+				de->scale_expr = nullptr;
 			}
 
 		}
@@ -821,7 +821,7 @@ bool CalcParser::InitTables(int rep_fraction_max_start, int rep_fraction_max_per
 	if (Functs) delete Functs;
 	if (Addons) delete Addons;
 	if (Numerals) delete Numerals;
-	Consts = Ops = Functs = Addons = Numerals = NULL;
+	Consts = Ops = Functs = Addons = Numerals = nullptr;
 
 	allFunctions.remove_all();
 	allNamedConstants.remove_all();
@@ -898,7 +898,7 @@ bool CalcParser::ProcessData(PSgmlEl BaseRc, bool case_sensitive)
 				{
 					par1 = El->GetChrParam(L"Set");
 					Set = Base->child();
-					PSgmlEl FoundSet = NULL;
+					PSgmlEl FoundSet = nullptr;
 					while(Set)
 					{
 						if (Set->getname() && !_wcsicmp(Set->getname(),L"Set") &&
@@ -979,7 +979,7 @@ void CalcParser::FillDialogData(PSgmlEl Base, bool case_sensitive, const wchar_t
 				de->Type = 0;
 			else 
 				de->Type = 1;
-			de->input = NULL;
+			de->input = nullptr;
 			de->scale = 1;
 			de->addon_idx = -1;
 
@@ -987,11 +987,11 @@ void CalcParser::FillDialogData(PSgmlEl Base, bool case_sensitive, const wchar_t
 			wchar_t *input = tmp->GetChrParam(L"input");
 			wchar_t *output = tmp->GetChrParam(L"output");
 			
-			if (input != NULL && output != NULL)
+			if (input != nullptr && output != nullptr)
 			{
 				PSyntax nxt = new SSyntax;
-				nxt->name = NULL;
-				nxt->name_set = NULL;
+				nxt->name = nullptr;
+				nxt->name_set = nullptr;
 				nxt->mean = new wchar_t[wcslen(output)+1];
 				nxt->flags = CALC_ADDON_FLAG_DIALOG;
 				wcscpy(nxt->mean, output);
