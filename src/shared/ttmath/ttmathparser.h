@@ -1,11 +1,11 @@
 /*
  * This file is a part of TTMath Bignum Library
- * and is distributed under the (new) BSD licence.
+ * and is distributed under the 3-Clause BSD Licence.
  * Author: Tomasz Sowa <t.sowa@ttmath.org>
  */
 
 /* 
- * Copyright (c) 2006-2010, Tomasz Sowa
+ * Copyright (c) 2006-2017, Tomasz Sowa
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -137,7 +137,7 @@ namespace ttmath
 template<class ValueType>
 class Parser
 {
-private:
+protected:
 
 /*!
 	there are 5 mathematical operators as follows (with their standard priorities):
@@ -156,7 +156,7 @@ private:
 
 		enum Type
 		{
-			none,add,sub,mul,div,pow,lt,gt,let,get,eq,neq,lor,land,shortmul
+			none,add,sub,mul,div,pow,lt,gt,let,get,eq,neq,lor,land,shortmul,assign
 		};
 
 		enum Assoc
@@ -176,6 +176,11 @@ private:
 
 			switch( type )
 			{		
+			case assign:
+				priority = 3;
+				assoc = right;
+				break;
+
 			case lor:
 				priority = 4;
 				break;
@@ -207,6 +212,11 @@ private:
 			case pow:
 				priority = 14;
 				assoc    = right;
+				break;
+
+			case none:
+				priority = 0;
+				assoc = non_right;
 				break;
 
 			default:
@@ -261,7 +271,8 @@ public:
 		*/
 		bool function;
 
-		// if function is true
+		// if type == first_bracket and if function is true
+		// or if type == variable
 		std::string function_name;
 
 		/*
@@ -272,8 +283,19 @@ public:
 		*/
 		bool sign;
 
-		Item(): type(none), function(false), sign(false)
+		Item()
 		{
+			Clear();
+		}
+
+		void Clear()
+		{
+			type = none;
+			value.SetNan();
+			moperator.SetType(MatOperator::none);
+			function = false;
+			function_name.clear();
+			sign = false;
 		}
 
 	}; // end of Item struct
@@ -296,7 +318,7 @@ public:
 std::vector<Item> stack;
 
 
-private:
+protected:
 
 
 /*!
@@ -395,7 +417,7 @@ std::set<std::string> visited_functions;
 	'amount_of_arg' tell us how many argument there are in our stack
 	'result' is the reference for result of function 
 */
-typedef void (Parser<ValueType>::*pfunction)(int pstack, int amount_of_arg, ValueType & result);
+typedef void (Parser<ValueType>::*pfunction)(unsigned int pstack, int amount_of_arg, ValueType & result);
 
 
 /*!
@@ -497,6 +519,82 @@ void SkipWhiteCharacters()
 	while( (*pstring==' ' ) || (*pstring=='\t') )
 		++pstring;
 }
+
+
+
+/*!
+	make sure there is a space for a new item at position stack_index
+*/
+virtual void EnsurePlaceOnStack()
+{
+	if( stack_index >= stack.size() )
+	{
+		stack.push_back(Item());
+	}
+}
+
+
+/*!
+	add a new item (numerical value) to the stack
+*/
+void AddToStack(ValueType & value)
+{
+	EnsurePlaceOnStack();
+
+	stack[stack_index].Clear();
+	stack[stack_index].type = Item::numerical_value;
+	stack[stack_index].value = value;
+	stack_index += 1;
+}
+
+
+/*!
+	add a new item to the stack
+*/
+void AddToStack(typename Item::Type type, bool is_sign)
+{
+	EnsurePlaceOnStack();
+
+	stack[stack_index].Clear();
+	stack[stack_index].type = type;
+	stack[stack_index].function = false;
+	stack[stack_index].sign = is_sign;
+	stack_index += 1;
+}
+
+
+/*!
+	add a new item (math operator) to the stack
+*/
+void AddToStack(typename MatOperator::Type mat_operator_type)
+{
+	EnsurePlaceOnStack();
+
+	stack[stack_index].Clear();
+	stack[stack_index].type = Item::mat_operator;
+	stack[stack_index].moperator.SetType(mat_operator_type);
+	stack_index += 1;
+}
+
+
+/*!
+	add a new item (function or variable) to the stack
+
+	if is_function is true then we add a function name
+	when false then we add a variable (such a case is only when an assigment operator = is used e.g. a = 10)
+*/
+void AddToStack(typename Item::Type type, const std::string & name, bool is_function, bool is_sign)
+{
+	EnsurePlaceOnStack();
+
+	stack[stack_index].Clear();
+	stack[stack_index].type = type;
+	stack[stack_index].function_name = name;
+	stack[stack_index].function = is_function;
+	stack[stack_index].sign = is_sign;
+	stack_index += 1;
+}
+
 
 
 /*!
@@ -637,7 +735,7 @@ return true;
 	we make an object of type ValueType then call a method which 
 	sets the correct value in it and finally we'll return the object
 */
-ValueType GetValueOfVariable(const std::string & variable_name)
+virtual ValueType GetValueOfVariable(const std::string & variable_name)
 {
 ValueType result;
 
@@ -661,16 +759,12 @@ return result;
 }
 
 
-private:
+protected:
 
 /*!
 	wrappers for mathematic functions
 
-	'sindex' is pointing on the first argument on our stack 
-			 (the second argument has 'sindex+2'
-			 because 'sindex+1' is guaranted for the 'semicolon' operator)
-			 the third artument has of course 'sindex+4' etc.
-
+	'index' is pointing on the first argument on the stack, the second argument has 'index+1' and so on
 	'result' will be the result of the function
 
 	(we're using exceptions here for example when function gets an improper argument)
@@ -723,14 +817,14 @@ return result;
 }
 
 
-void Gamma(int sindex, int amount_of_args, ValueType & result)
+void Gamma(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
 	
-	result = ttmath::Gamma(stack[sindex].value, cgamma, &err, pstop_calculating);
+	result = ttmath::Gamma(stack[index].value, cgamma, &err, pstop_calculating);
 
 	if(err != err_ok)
 		Error( err );
@@ -741,135 +835,135 @@ void Gamma(int sindex, int amount_of_args, ValueType & result)
 	factorial
 	result = 1 * 2 * 3 * 4 * .... * x
 */
-void Factorial(int sindex, int amount_of_args, ValueType & result)
+void Factorial(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
 
-	result = ttmath::Factorial(stack[sindex].value, cgamma, &err, pstop_calculating);
+	result = ttmath::Factorial(stack[index].value, cgamma, &err, pstop_calculating);
 
 	if(err != err_ok)
 		Error( err );
 }
 
 
-void Abs(int sindex, int amount_of_args, ValueType & result)
+void Abs(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
-	result = ttmath::Abs(stack[sindex].value);
+	result = ttmath::Abs(stack[index].value);
 }
 
-void Sin(int sindex, int amount_of_args, ValueType & result)
+void Sin(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Sin( ConvertAngleToRad(stack[sindex].value), &err );
+	result = ttmath::Sin( ConvertAngleToRad(stack[index].value), &err );
 
 	if(err != err_ok)
 		Error( err );
 }
 
-void Cos(int sindex, int amount_of_args, ValueType & result)
+void Cos(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Cos( ConvertAngleToRad(stack[sindex].value), &err );
+	result = ttmath::Cos( ConvertAngleToRad(stack[index].value), &err );
 
 	if(err != err_ok)
 		Error( err );
 }
 
-void Tan(int sindex, int amount_of_args, ValueType & result)
+void Tan(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Tan(ConvertAngleToRad(stack[sindex].value), &err);
+	result = ttmath::Tan(ConvertAngleToRad(stack[index].value), &err);
 
 	if(err != err_ok)
 		Error( err );
 }
 
-void Cot(int sindex, int amount_of_args, ValueType & result)
+void Cot(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Cot(ConvertAngleToRad(stack[sindex].value), &err);
+	result = ttmath::Cot(ConvertAngleToRad(stack[index].value), &err);
 
 	if(err != err_ok)
 		Error( err );
 }
 
-void Int(int sindex, int amount_of_args, ValueType & result)
+void Int(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
-	result = ttmath::SkipFraction(stack[sindex].value);
+	result = ttmath::SkipFraction(stack[index].value);
 }
 
 
-void Round(int sindex, int amount_of_args, ValueType & result)
+void Round(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
-	result = stack[sindex].value;
+	result = stack[index].value;
 
 	if( result.Round() )
 		Error( err_overflow );
 }
 
 
-void Ln(int sindex, int amount_of_args, ValueType & result)
+void Ln(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Ln(stack[sindex].value, &err);
+	result = ttmath::Ln(stack[index].value, &err);
 
 	if(err != err_ok)
 		Error( err );
 }
 
-void Log(int sindex, int amount_of_args, ValueType & result)
+void Log(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 2 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Log(stack[sindex].value, stack[sindex+2].value, &err);
+	result = ttmath::Log(stack[index].value, stack[index+1].value, &err);
 
 	if(err != err_ok)
 		Error( err );
 }
 
-void Exp(int sindex, int amount_of_args, ValueType & result)
+void Exp(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Exp(stack[sindex].value, &err);
+	result = ttmath::Exp(stack[index].value, &err);
 
 	if(err != err_ok)
 		Error( err );
 }
 
 
-void Max(int sindex, int amount_of_args, ValueType & result)
+void Max(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args == 0 )
 	{
@@ -878,17 +972,17 @@ void Max(int sindex, int amount_of_args, ValueType & result)
 	return;
 	}
 
-	result = stack[sindex].value;
+	result = stack[index].value;
 
-	for(int i=1 ; i<amount_of_args ; ++i)
+	for(int i=1 ; i < amount_of_args ; ++i)
 	{
-		if( result < stack[sindex + i*2].value )
-			result = stack[sindex + i*2].value;
+		if( result < stack[index + i].value )
+			result = stack[index + i].value;
 	}
 }
 
 
-void Min(int sindex, int amount_of_args, ValueType & result)
+void Min(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args == 0 )
 	{
@@ -897,23 +991,23 @@ void Min(int sindex, int amount_of_args, ValueType & result)
 	return;
 	}
 
-	result = stack[sindex].value;
+	result = stack[index].value;
 
 	for(int i=1 ; i<amount_of_args ; ++i)
 	{
-		if( result > stack[sindex + i*2].value )
-			result = stack[sindex + i*2].value;
+		if( result > stack[index + i].value )
+			result = stack[index + i].value;
 	}
 }
 
 
-void ASin(int sindex, int amount_of_args, ValueType & result)
+void ASin(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	ValueType temp = ttmath::ASin(stack[sindex].value, &err);
+	ValueType temp = ttmath::ASin(stack[index].value, &err);
 
 	if(err != err_ok)
 		Error( err );
@@ -922,13 +1016,13 @@ void ASin(int sindex, int amount_of_args, ValueType & result)
 }
 
 
-void ACos(int sindex, int amount_of_args, ValueType & result)
+void ACos(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	ValueType temp = ttmath::ACos(stack[sindex].value, &err);
+	ValueType temp = ttmath::ACos(stack[index].value, &err);
 
 	if(err != err_ok)
 		Error( err );
@@ -937,70 +1031,70 @@ void ACos(int sindex, int amount_of_args, ValueType & result)
 }
 
 
-void ATan(int sindex, int amount_of_args, ValueType & result)
+void ATan(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
-	result = ConvertRadToAngle(ttmath::ATan(stack[sindex].value));
+	result = ConvertRadToAngle(ttmath::ATan(stack[index].value));
 }
 
 
-void ACot(int sindex, int amount_of_args, ValueType & result)
+void ACot(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
-	result = ConvertRadToAngle(ttmath::ACot(stack[sindex].value));
+	result = ConvertRadToAngle(ttmath::ACot(stack[index].value));
 }
 
 
-void Sgn(int sindex, int amount_of_args, ValueType & result)
+void Sgn(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
-	result = ttmath::Sgn(stack[sindex].value);
+	result = ttmath::Sgn(stack[index].value);
 }
 
 
-void Mod(int sindex, int amount_of_args, ValueType & result)
+void Mod(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 2 )
 		Error( err_improper_amount_of_arguments );
 
-	if( stack[sindex+2].value.IsZero() )
+	if( stack[index+1].value.IsZero() )
 		Error( err_improper_argument );
 
-	result = stack[sindex].value;
-	uint c = result.Mod(stack[sindex+2].value);
+	result = stack[index].value;
+	uint c = result.Mod(stack[index+1].value);
 
 	if( c )
 		Error( err_overflow );
 }
 
 
-void If(int sindex, int amount_of_args, ValueType & result)
+void If(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 3 )
 		Error( err_improper_amount_of_arguments );
 
 
-	if( !stack[sindex].value.IsZero() )
-		result = stack[sindex+2].value;
+	if( !stack[index].value.IsZero() )
+		result = stack[index+1].value;
 	else
-		result = stack[sindex+4].value;
+		result = stack[index+2].value;
 }
 
 
-void Or(int sindex, int amount_of_args, ValueType & result)
+void Or(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args < 2 )
 		Error( err_improper_amount_of_arguments );
 
-	for(int i=0 ; i<amount_of_args ; ++i)
+	for(int i=0 ; i < amount_of_args ; ++i)
 	{
-		if( !stack[sindex+i*2].value.IsZero() )
+		if( !stack[index+i].value.IsZero() )
 		{
 			result.SetOne();
 			return;
@@ -1011,14 +1105,14 @@ void Or(int sindex, int amount_of_args, ValueType & result)
 }
 
 
-void And(int sindex, int amount_of_args, ValueType & result)
+void And(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args < 2 )
 		Error( err_improper_amount_of_arguments );
 
 	for(int i=0 ; i<amount_of_args ; ++i)
 	{
-		if( stack[sindex+i*2].value.IsZero() )
+		if( stack[index+i].value.IsZero() )
 		{
 			result.SetZero();
 			return;
@@ -1029,32 +1123,32 @@ void And(int sindex, int amount_of_args, ValueType & result)
 }
 
 
-void Not(int sindex, int amount_of_args, ValueType & result)
+void Not(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 
-	if( stack[sindex].value.IsZero() )
+	if( stack[index].value.IsZero() )
 		result.SetOne();
 	else
 		result.SetZero();
 }
 
 
-void DegToRad(int sindex, int amount_of_args, ValueType & result)
+void DegToRad(unsigned int index, int amount_of_args, ValueType & result)
 {
 	ErrorCode err = err_ok;
 
 	if( amount_of_args == 1 )
 	{
-		result = ttmath::DegToRad(stack[sindex].value, &err);
+		result = ttmath::DegToRad(stack[index].value, &err);
 	}
 	else
 	if( amount_of_args == 3 )
 	{
-		result = ttmath::DegToRad(	stack[sindex].value, stack[sindex+2].value,
-									stack[sindex+4].value, &err);
+		result = ttmath::DegToRad(	stack[index].value, stack[index+1].value,
+									stack[index+2].value, &err);
 	}
 	else
 		Error( err_improper_amount_of_arguments );
@@ -1065,75 +1159,75 @@ void DegToRad(int sindex, int amount_of_args, ValueType & result)
 }
 
 
-void RadToDeg(int sindex, int amount_of_args, ValueType & result)
+void RadToDeg(unsigned int index, int amount_of_args, ValueType & result)
 {
 	ErrorCode err;
 
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 	
-	result = ttmath::RadToDeg(stack[sindex].value, &err);
+	result = ttmath::RadToDeg(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void DegToDeg(int sindex, int amount_of_args, ValueType & result)
+void DegToDeg(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 3 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::DegToDeg(	stack[sindex].value, stack[sindex+2].value,
-								stack[sindex+4].value, &err);
+	result = ttmath::DegToDeg(	stack[index].value, stack[index+1].value,
+								stack[index+2].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void GradToRad(int sindex, int amount_of_args, ValueType & result)
+void GradToRad(unsigned int index, int amount_of_args, ValueType & result)
 {
 	ErrorCode err;
 
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 	
-	result = ttmath::GradToRad(stack[sindex].value, &err);
+	result = ttmath::GradToRad(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void RadToGrad(int sindex, int amount_of_args, ValueType & result)
+void RadToGrad(unsigned int index, int amount_of_args, ValueType & result)
 {
 	ErrorCode err;
 
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 	
-	result = ttmath::RadToGrad(stack[sindex].value, &err);
+	result = ttmath::RadToGrad(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void DegToGrad(int sindex, int amount_of_args, ValueType & result)
+void DegToGrad(unsigned int index, int amount_of_args, ValueType & result)
 {
 	ErrorCode err = err_ok;
 
 	if( amount_of_args == 1 )
 	{
-		result = ttmath::DegToGrad(stack[sindex].value, &err);
+		result = ttmath::DegToGrad(stack[index].value, &err);
 	}
 	else
 	if( amount_of_args == 3 )
 	{
-		result = ttmath::DegToGrad(	stack[sindex].value, stack[sindex+2].value,
-									stack[sindex+4].value, &err);
+		result = ttmath::DegToGrad(	stack[index].value, stack[index+1].value,
+									stack[index+2].value, &err);
 	}
 	else
 		Error( err_improper_amount_of_arguments );
@@ -1144,117 +1238,117 @@ void DegToGrad(int sindex, int amount_of_args, ValueType & result)
 }
 
 
-void GradToDeg(int sindex, int amount_of_args, ValueType & result)
+void GradToDeg(unsigned int index, int amount_of_args, ValueType & result)
 {
 	ErrorCode err;
 
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 	
-	result = ttmath::GradToDeg(stack[sindex].value, &err);
+	result = ttmath::GradToDeg(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void Ceil(int sindex, int amount_of_args, ValueType & result)
+void Ceil(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Ceil(stack[sindex].value, &err);
+	result = ttmath::Ceil(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void Floor(int sindex, int amount_of_args, ValueType & result)
+void Floor(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Floor(stack[sindex].value, &err);
+	result = ttmath::Floor(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
-void Sqrt(int sindex, int amount_of_args, ValueType & result)
+void Sqrt(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Sqrt(stack[sindex].value, &err);
+	result = ttmath::Sqrt(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void Sinh(int sindex, int amount_of_args, ValueType & result)
+void Sinh(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Sinh(stack[sindex].value, &err);
+	result = ttmath::Sinh(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void Cosh(int sindex, int amount_of_args, ValueType & result)
+void Cosh(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Cosh(stack[sindex].value, &err);
+	result = ttmath::Cosh(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void Tanh(int sindex, int amount_of_args, ValueType & result)
+void Tanh(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Tanh(stack[sindex].value, &err);
+	result = ttmath::Tanh(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void Coth(int sindex, int amount_of_args, ValueType & result)
+void Coth(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Coth(stack[sindex].value, &err);
+	result = ttmath::Coth(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void Root(int sindex, int amount_of_args, ValueType & result)
+void Root(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 2 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::Root(stack[sindex].value, stack[sindex+2].value, &err);
+	result = ttmath::Root(stack[index].value, stack[index+1].value, &err);
 
 	if( err != err_ok )
 		Error( err );
@@ -1262,66 +1356,66 @@ void Root(int sindex, int amount_of_args, ValueType & result)
 
 
 
-void ASinh(int sindex, int amount_of_args, ValueType & result)
+void ASinh(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::ASinh(stack[sindex].value, &err);
+	result = ttmath::ASinh(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void ACosh(int sindex, int amount_of_args, ValueType & result)
+void ACosh(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::ACosh(stack[sindex].value, &err);
+	result = ttmath::ACosh(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void ATanh(int sindex, int amount_of_args, ValueType & result)
+void ATanh(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::ATanh(stack[sindex].value, &err);
+	result = ttmath::ATanh(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void ACoth(int sindex, int amount_of_args, ValueType & result)
+void ACoth(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
 	ErrorCode err;
-	result = ttmath::ACoth(stack[sindex].value, &err);
+	result = ttmath::ACoth(stack[index].value, &err);
 
 	if( err != err_ok )
 		Error( err );
 }
 
 
-void BitAnd(int sindex, int amount_of_args, ValueType & result)
+void BitAnd(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 2 )
 		Error( err_improper_amount_of_arguments );
 
 	uint err;
-	result = stack[sindex].value;
-	err = result.BitAnd(stack[sindex+2].value);
+	result = stack[index].value;
+	err = result.BitAnd(stack[index+1].value);
 
 	switch(err)
 	{
@@ -1334,35 +1428,14 @@ void BitAnd(int sindex, int amount_of_args, ValueType & result)
 	}
 }
 
-void BitOr(int sindex, int amount_of_args, ValueType & result)
+void BitOr(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 2 )
 		Error( err_improper_amount_of_arguments );
 
 	uint err;
-	result = stack[sindex].value;
-	err = result.BitOr(stack[sindex+2].value);
-
-	switch(err)
-	{
-	case 1:
-		Error( err_overflow );
-		break;
-	case 2:
-		Error( err_improper_argument );
-		break;
-	}
-}
-
-
-void BitXor(int sindex, int amount_of_args, ValueType & result)
-{
-	if( amount_of_args != 2 )
-		Error( err_improper_amount_of_arguments );
-
-	uint err;
-	result = stack[sindex].value;
-	err = result.BitXor(stack[sindex+2].value);
+	result = stack[index].value;
+	err = result.BitOr(stack[index+1].value);
 
 	switch(err)
 	{
@@ -1376,27 +1449,48 @@ void BitXor(int sindex, int amount_of_args, ValueType & result)
 }
 
 
-void Sum(int sindex, int amount_of_args, ValueType & result)
+void BitXor(unsigned int index, int amount_of_args, ValueType & result)
+{
+	if( amount_of_args != 2 )
+		Error( err_improper_amount_of_arguments );
+
+	uint err;
+	result = stack[index].value;
+	err = result.BitXor(stack[index+1].value);
+
+	switch(err)
+	{
+	case 1:
+		Error( err_overflow );
+		break;
+	case 2:
+		Error( err_improper_argument );
+		break;
+	}
+}
+
+
+void Sum(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args == 0 )
 		Error( err_improper_amount_of_arguments );
 
-	result = stack[sindex].value;
+	result = stack[index].value;
 
-	for(int i=1 ; i<amount_of_args ; ++i )
-		if( result.Add( stack[ sindex + i*2 ].value ) )
+	for(int i=1 ; i < amount_of_args ; ++i )
+		if( result.Add( stack[ index + i ].value ) )
 			Error( err_overflow );
 }	
 
-void Avg(int sindex, int amount_of_args, ValueType & result)
+void Avg(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args == 0 )
 		Error( err_improper_amount_of_arguments );
 
-	result = stack[sindex].value;
+	result = stack[index].value;
 
-	for(int i=1 ; i<amount_of_args ; ++i )
-		if( result.Add( stack[ sindex + i*2 ].value ) )
+	for(int i=1 ; i < amount_of_args ; ++i )
+		if( result.Add( stack[ index + i ].value ) )
 			Error( err_overflow );
 
 	if( result.Div( amount_of_args ) )
@@ -1404,12 +1498,12 @@ void Avg(int sindex, int amount_of_args, ValueType & result)
 }	
 
 
-void Frac(int sindex, int amount_of_args, ValueType & result)
+void Frac(unsigned int index, int amount_of_args, ValueType & result)
 {
 	if( amount_of_args != 1 )
 		Error( err_improper_amount_of_arguments );
 
-	result = stack[sindex].value;
+	result = stack[index].value;
 	result.RemainFraction();
 }
 
@@ -1448,7 +1542,7 @@ int i;
 
 	(look at the description in 'CallFunction(...)')
 */
-bool GetValueOfUserDefinedFunction(const std::string & function_name, int amount_of_args, int sindex)
+bool GetValueOfUserDefinedFunction(const std::string & function_name, int amount_of_args, unsigned int index)
 {
 	if( !puser_functions )
 		return false;
@@ -1472,17 +1566,17 @@ bool GetValueOfUserDefinedFunction(const std::string & function_name, int amount
 		// x = x1
 		buffer[0] = 'x';
 		buffer[1] = 0;
-		local_variables.insert( std::make_pair(buffer, stack[sindex].value) );
+		local_variables.insert( std::make_pair(buffer, stack[index].value) );
 
 		for(int i=0 ; i<amount_of_args ; ++i)
 		{
 			buffer[0] = 'x';
 			Sprintf(buffer+1, i+1);
-			local_variables.insert( std::make_pair(buffer, stack[sindex + i*2].value) );
+			local_variables.insert( std::make_pair(buffer, stack[index + i].value) );
 		}
 	}
 
-	stack[sindex-1].value = RecurrenceParsingVariablesOrFunction(false, function_name, string_value, &local_variables);
+	stack[index-1].value = RecurrenceParsingVariablesOrFunction(false, function_name, string_value, &local_variables);
 	calculated = true;
 
 return true;
@@ -1495,16 +1589,16 @@ return true;
 	function_name  - name of the function
 	amount_of_args - how many arguments there are on our stack
 					 (function must check whether this is a correct value or not)
-	sindex         - index of the first argument on the stack (sindex is greater than zero)
-  					 if there aren't any arguments on the stack 'sindex' pointing on
+	index          - index of the first argument on the stack (index is greater than zero)
+  					 if there are no arguments on the stack then 'index' is pointing to
 					 a non existend element (after the first bracket)
 
-	result will be stored in 'stack[sindex-1].value'
+	result will be stored in 'stack[index-1].value'
 	(we don't have to set the correct type of this element, it'll be set later)
 */
-void CallFunction(const std::string & function_name, int amount_of_args, int sindex)
+virtual void CallFunction(const std::string & function_name, int amount_of_args, unsigned int index)
 {
-	if( GetValueOfUserDefinedFunction(function_name, amount_of_args, sindex) )
+	if( GetValueOfUserDefinedFunction(function_name, amount_of_args, index) )
 		return;
 
 	typename FunctionsTable::iterator i = functions_table.find( function_name );
@@ -1515,7 +1609,7 @@ void CallFunction(const std::string & function_name, int amount_of_args, int sin
 	/*
 		calling the specify function
 	*/
-	(this->*(i->second))(sindex, amount_of_args, stack[sindex-1].value);
+	(this->*(i->second))(index, amount_of_args, stack[index-1].value);
 	calculated = true;
 }
 
@@ -1645,110 +1739,96 @@ return c;
 }
 
 
+
+
+/*!
+	return true if c is a valid function or variable name character
+*/
+virtual bool IsValidNameCharacter(int c)
+{
+	return(	(c>='a' && c<='z') ||
+			(c>='A' && c<='Z') ||
+			(c>='0' && c<='9') ||
+			c=='_' );
+}
+
+
 /*!
 	this method read the name of a variable or a function
-	
-		'result' will be the name of a variable or a function
-		function return 'false' if this name is the name of a variable
-		or function return 'true' if this name is the name of a function
-
-	what should be returned is tested just by a '(' character that means if there's
-	a '(' character after a name that function returns 'true'
+	'result' will be the name of a variable or a function
 */
-bool ReadName(std::string & result)
+virtual void ReadName(std::string & result)
 {
-int character;
-
-
 	result.erase();
-	character = *pstring;
 
-	/*
-		the first letter must be from range 'a' - 'z' or 'A' - 'Z'
-	*/
-	if( ! (( character>='a' && character<='z' ) || ( character>='A' && character<='Z' )) )
-		Error( err_unknown_character );
-
-
-	do
+	while( IsValidNameCharacter(*pstring) )
 	{
-		result   += static_cast<char>( character );
-		character = * ++pstring;
+		result += *pstring;
+		pstring += 1;
 	}
-	while(	(character>='a' && character<='z') ||
-			(character>='A' && character<='Z') ||
-			(character>='0' && character<='9') ||
-			character=='_' );
-	
-
-	SkipWhiteCharacters();
-	
-
-	/*
-		if there's a character '(' that means this name is a name of a function
-	*/
-	if( *pstring == '(' )
-	{
-		++pstring;
-		return true;
-	}
-	
-	
-return false;
 }
 
-
-/*!
-	we're checking whether the first character is '-' or '+'
-	if it is we'll return 'true' and if it is equally '-' we'll set the 'sign' member of 'result'
-*/
-bool TestSign(Item & result)
-{
-	SkipWhiteCharacters();
-	result.sign = false;
-
-	if( *pstring == '-' || *pstring == '+' )
-	{
-		if( *pstring == '-' )
-			result.sign = true;
-
-		++pstring;
-
-	return true;
-	}
-
-return false;
-}
 
 
 /*!
 	we're reading the name of a variable or a function
 	if is there a function we'll return 'true'
+	also we return true when we read the name of a variable with an assignment operator
 */
-bool ReadVariableOrFunction(Item & result)
+virtual bool ReadVariableOrFunction(bool was_sign, bool was_minus_sign)
 {
-std::string name;
-bool is_it_name_of_function = ReadName(name);
+	std::string name;
+	bool read_next_token = false;
 
-	if( is_it_name_of_function )
+	ReadName(name);
+	SkipWhiteCharacters();
+
+	if( *pstring == '(' )
 	{
 		/*
-			we've read the name of a function
+			if there's a character '(' that means this name is a name of a function
 		*/
-		result.function_name = name;
-		result.type     = Item::first_bracket;
-		result.function = true;
+		++pstring;
+		AddToStack(Item::first_bracket, name, true, was_minus_sign);
+		read_next_token = true;
+	}
+	else
+	if( *pstring == '=' && *(pstring+1) != '=' )
+	{
+		/*
+			if there's a character '=' that means this name is a name of a variable with an assigment operator
+		*/
+		++pstring;
+
+		if( !was_sign )
+		{
+			AddToStack(Item::variable, name, false, false);
+			AddToStack(MatOperator::assign);
+			read_next_token = true;
+		}
+		else
+		{
+			// something like: '-a = 10' or '+a = 10'
+			Error( err_assignment_requires_variable );
+		}
 	}
 	else
 	{
 		/*
 			we've read the name of a variable and we're getting its value now
 		*/
-		result.value = GetValueOfVariable( name );
+		ValueType value = GetValueOfVariable(name);
+
+		if( was_minus_sign )
+			value.ChangeSign();
+
+		AddToStack(value);
 	}
 
-return is_it_name_of_function;
+	return read_next_token;
 }
+
+
 
 
 
@@ -1756,9 +1836,9 @@ return is_it_name_of_function;
 /*!
 	we're reading a numerical value directly from the string
 */
-void ReadValue(Item & result, int reading_base)
+virtual void ReadValue(int reading_base, bool change_sign)
 {
-const char * new_stack_pointer;
+const char * after_value_string;
 bool value_read;
 Conv conv;
 
@@ -1767,21 +1847,29 @@ Conv conv;
 	conv.comma2 = comma2;
 	conv.group  = group;
 
-	uint carry = result.value.FromString(pstring, conv, &new_stack_pointer, &value_read);
-	pstring    = new_stack_pointer;
+	ValueType value;
+	uint carry = value.FromString(pstring, conv, &after_value_string, &value_read);
+	pstring    = after_value_string;
 
 	if( carry )
 		Error( err_overflow );
 
 	if( !value_read )
 		Error( err_unknown_character );
+
+	if( change_sign )
+	{
+		value.ChangeSign();
+	}
+
+	AddToStack(value);
 }
 
 
 /*!
 	this method returns true if 'character' is a proper first digit for the value (or a comma -- can be first too)
 */
-bool ValueStarts(int character, int base)
+virtual bool ValueStarts(int character, int character_base)
 {
 	if( character == comma )
 		return true;
@@ -1789,10 +1877,98 @@ bool ValueStarts(int character, int base)
 	if( comma2!=0 && character==comma2 )
 		return true;
 
-	if( Misc::CharToDigit(character, base) != -1 )
+	if( Misc::CharToDigit(character, character_base) != -1 )
 		return true;
 
 return false;
+}
+
+
+virtual void CheckSignBeforeExpression(bool & was_sign, bool & was_minus_sign)
+{
+	was_sign = false;
+	was_minus_sign = false;
+
+	SkipWhiteCharacters();
+
+	if( *pstring == '-' )
+	{
+		was_sign = true;
+		was_minus_sign = true;
+		++pstring;
+	}
+
+	if( *pstring == '+' )
+	{
+		was_sign = true;
+		++pstring;
+	}
+}
+
+
+
+virtual bool ReadToken()
+{
+	bool was_sign, was_minus_sign;
+	bool read_next_token = false;
+
+	CheckSignBeforeExpression(was_sign, was_minus_sign);
+	SkipWhiteCharacters();
+
+	int character = ToLowerCase( *pstring );
+
+	if( character == 0 )
+	{
+		if( was_sign )
+		{
+			Error( err_unexpected_end ); // at the end of the string a character like '-' or '+' has left
+		}
+	}
+	else
+	if( character == '(' )
+	{
+		AddToStack(Item::first_bracket, was_minus_sign); // we've got a normal bracket (not a function)
+		++pstring;
+		read_next_token = true;
+	}
+	else
+	if( character == '#' )
+	{
+		++pstring;
+
+		// after '#' character must be directly value (we do not allow '-' or '+' or white characters)
+		if(	ValueStarts(*pstring, 16) )
+			ReadValue(16, was_minus_sign);
+		else
+			Error( err_unknown_character );
+	}
+	else
+	if( character == '&' )
+	{
+		++pstring;
+
+		// after '&' character must be directly value (we do not allow '-' or '+' or white characters)
+		if(	ValueStarts(*pstring, 2) )
+			ReadValue(2, was_minus_sign);
+		else
+			Error( err_unknown_character );
+	}
+	else
+	if(	ValueStarts(character, base) )
+	{
+		ReadValue(base, was_minus_sign);
+	}
+	else
+	if( character>='a' && character<='z' )
+	{
+		read_next_token = ReadVariableOrFunction(was_sign, was_minus_sign);
+	}
+	else
+	{
+		Error( err_unknown_character );
+	}
+
+	return read_next_token;
 }
 
 
@@ -1804,111 +1980,19 @@ return false;
 		1 - the end of the string (the item is not read)
 		2 - the final bracket ')'
 */
-int ReadValueVariableOrFunction(Item & result)
+virtual void ReadTokens()
 {
-bool it_was_sign = false;
-int  character;
+	bool continue_reading;
 
-
-	if( TestSign(result) )
-		// 'result.sign' was set as well
-		it_was_sign = true;
-
-	SkipWhiteCharacters();
-	character = ToLowerCase( *pstring );
-
-
-	if( character == 0 )
+	do
 	{
-		if( it_was_sign )
-			// at the end of the string a character like '-' or '+' has left
-			Error( err_unexpected_end );
-
-		// there's the end of the string here
-		return 1;
-	}
-	else
-	if( character == '(' )
-	{
-		// we've got a normal bracket (not a function)
-		result.type = Item::first_bracket;
-		result.function = false;
-		++pstring;
-
-	return 0;
-	}
-	else
-	if( character == ')' )
-	{
-		// we've got a final bracket
-		// (in this place we can find a final bracket only when there are empty brackets
-		// without any values inside or with a sign '-' or '+' inside)
-
-		if( it_was_sign )
-			Error( err_unexpected_final_bracket );
-
-		result.type = Item::last_bracket;
-
-		// we don't increment 'pstring', this final bracket will be read next by the 
-		// 'ReadOperatorAndCheckFinalBracket(...)' method
-
-	return 2;
-	}
-	else
-	if( character == '#' )
-	{
-		++pstring;
+		continue_reading = false;
 		SkipWhiteCharacters();
 
-		// after '#' character we do not allow '-' or '+' (can be white characters)
-		if(	ValueStarts(*pstring, 16) )
-			ReadValue( result, 16 );
-		else
-			Error( err_unknown_character );
-	}
-	else
-	if( character == '&' )
-	{
-		++pstring;
-		SkipWhiteCharacters();
+		if( *pstring )
+			continue_reading = ReadToken();
 
-		// after '&' character we do not allow '-' or '+' (can be white characters)
-		if(	ValueStarts(*pstring, 2) )
-			ReadValue( result, 2 );
-		else
-			Error( err_unknown_character );
-	}
-	else
-	if(	ValueStarts(character, base) )
-	{
-		ReadValue( result, base );
-	}
-	else
-	if( character>='a' && character<='z' )
-	{
-		if( ReadVariableOrFunction(result) )
-			// we've read the name of a function
-			return 0;
-	}
-	else
-		Error( err_unknown_character );
-
-
-
-	/*
-		we've got a value in the 'result'
-		this value is from a variable or directly from the string
-	*/
-	result.type = Item::numerical_value;
-	
-	if( result.sign )
-	{
-		result.value.ChangeSign();
-		result.sign = false;
-	}
-	
-
-return 0;
+	} while( continue_reading );
 }
 
 
@@ -1936,22 +2020,23 @@ void CreateMathematicalOperatorsTable()
 	InsertOperatorToTable("/",  MatOperator::div);
 	InsertOperatorToTable("*",  MatOperator::mul);
 	InsertOperatorToTable("^",  MatOperator::pow);
+	InsertOperatorToTable("=",  MatOperator::assign);
 }
 
 
 /*!
-	returns true if 'str2' is the substring of str1
+	returns true if 'short_str' is the substring of long_str
 
 	e.g.
-	true when str1="test" and str2="te"
+	true when short_str="te" and long_str="test"
 */
-bool IsSubstring(const std::string & str1, const std::string & str2)
+virtual bool IsSubstring(const std::string & short_str, const std::string & long_str)
 {
-	if( str2.length() > str1.length() )
+	if( short_str.length() > long_str.length() )
 		return false;
 
-	for(typename std::string::size_type i=0 ; i<str2.length() ; ++i)
-		if( str1[i] != str2[i] )
+	for(typename std::string::size_type i=0 ; i<short_str.length() ; ++i)
+		if( short_str[i] != long_str[i] )
 			return false;
 
 return true;
@@ -1961,7 +2046,7 @@ return true;
 /*!
 	this method reads a mathematical (or logical) operator
 */
-void ReadMathematicalOperator(Item & result)
+void ReadMathematicalOperator()
 {
 std::string oper;
 typename OperatorsTable::iterator iter_old, iter_new;
@@ -1973,14 +2058,13 @@ typename OperatorsTable::iterator iter_old, iter_new;
 		oper += *pstring;
 		iter_new = operators_table.lower_bound(oper);
 		
-		if( iter_new == operators_table.end() || !IsSubstring(iter_new->first, oper) )
+		if( iter_new == operators_table.end() || !IsSubstring(oper, iter_new->first) )
 		{
-			oper.erase( --oper.end() ); // we've got mininum one element
+			oper.erase(oper.begin() + oper.size() - 1); // we've got minimum one element
 
 			if( iter_old != operators_table.end() && iter_old->first == oper )
 			{
-				result.type = Item::mat_operator;
-				result.moperator.SetType( iter_old->second );
+				AddToStack(iter_old->second);
 				break;
 			}
 			
@@ -2003,17 +2087,20 @@ void OperatorPercentage()
 		stack[stack_index-1].type != Item::numerical_value	||
 		stack[stack_index-2].type != Item::mat_operator		||
 		stack[stack_index-3].type != Item::numerical_value	)
-		Error(err_percent_from);
+	{
+		Error( err_percent_from );
+	}
+	else
+	{
+		uint c = 0;
+		c += stack[stack_index-1].value.Div(100);
+		c += stack[stack_index-1].value.Mul(stack[stack_index-3].value);
 
-	++pstring;
-	SkipWhiteCharacters();
-
-	uint c = 0;
-	c += stack[stack_index-1].value.Div(100);
-	c += stack[stack_index-1].value.Mul(stack[stack_index-3].value);
-
-	if( c )
-		Error(err_overflow);
+		if( c )
+		{
+			Error( err_overflow );
+		}
+	}
 }
 
 
@@ -2022,44 +2109,76 @@ void OperatorPercentage()
 	or the final bracket or the semicolon operator
 
 	return values:
-		0 - ok
-		1 - the string is finished
+		true - if next operator should be read
 */
-int ReadOperator(Item & result)
+virtual bool ReadOperator()
 {
-	SkipWhiteCharacters();
+	bool read_next_operator = false;
 
 	if( *pstring == '%' )
+	{
 		OperatorPercentage();
-
+		++pstring;
+		SkipWhiteCharacters();
+		// now we can read another operator
+		// we do not return read_next_operator=true here because
+		// we dont want such an expression to be correct: 20-10+20%% (two percentage operators next to each other)
+		// you must use brackets to calculate it: 20-(10+20%)%
+	}
 
 	if( *pstring == 0 )
-		return 1;
+	{
+		// the string is finished (after reading % operator)
+	}
 	else
 	if( *pstring == ')' )
 	{
-		result.type = Item::last_bracket;
 		++pstring;
+		RollingUpFinalBracket();
+		read_next_operator = true;
 	}
 	else
 	if( *pstring == ';' || (param_sep!=0 && *pstring==param_sep) )
 	{
-		result.type = Item::semicolon;
+		RollUPStack();
 		++pstring;
 	}
 	else
 	if( (*pstring>='a' && *pstring<='z') || (*pstring>='A' && *pstring<='Z') )
 	{
 		// short mul (without any operators)
-
-		result.type = Item::mat_operator;
-		result.moperator.SetType( MatOperator::shortmul );
+		// short mul is available only if the next item is a variable or a function
+		AddToStack(MatOperator::shortmul);
 	}
 	else
-		ReadMathematicalOperator(result);
+	{
+		ReadMathematicalOperator();
+	}
 
-return 0;
+	return read_next_operator;
 }
+
+
+
+/*!
+	this method is reading a operator and if it's a final bracket
+	it's calling RollingUpFinalBracket() and reading an operator again
+*/
+virtual void ReadOperators()
+{
+	bool continue_reading;
+
+	do
+	{
+		continue_reading = false;
+		SkipWhiteCharacters();
+
+		if( *pstring )
+			continue_reading = ReadOperator();
+	}
+	while( continue_reading );
+}
+
 
 
 
@@ -2069,12 +2188,13 @@ return 0;
 	the operation is made between 'value1' and 'value2'
 	the result of this operation is stored in the 'value1'
 */
-void MakeStandardMathematicOperation(ValueType & value1, typename MatOperator::Type mat_operator,
-									const ValueType & value2)
+virtual void MakeStandardMathematicOperation(Item & item1, typename MatOperator::Type mat_operator, const Item & item2)
 {
 uint res;
 
 	calculated = true;
+	ValueType & value1  = item1.value;
+	const ValueType & value2 = item2.value;
 
 	switch( mat_operator )
 	{
@@ -2161,10 +2281,10 @@ uint res;
 		"1 - 2 *"
 	we can't roll the stack up because the operator '*' has greater priority than '-'
 */
-void TryRollingUpStackWithOperatorPriority()
+void RollUpStackWithOperatorsPriority()
 {
 	while(	stack_index>=4 &&
-			stack[stack_index-4].type == Item::numerical_value &&
+			(stack[stack_index-4].type == Item::numerical_value || stack[stack_index-4].type == Item::variable) &&
 			stack[stack_index-3].type == Item::mat_operator    &&
 			stack[stack_index-2].type == Item::numerical_value &&
 			stack[stack_index-1].type == Item::mat_operator    &&
@@ -2181,9 +2301,9 @@ void TryRollingUpStackWithOperatorPriority()
 			)
 		 )
 	{
-		MakeStandardMathematicOperation(stack[stack_index-4].value,
+		MakeStandardMathematicOperation(stack[stack_index-4],
 										stack[stack_index-3].moperator.GetType(),
-										stack[stack_index-2].value);
+										stack[stack_index-2]);
 
 
 		/*
@@ -2202,47 +2322,19 @@ void TryRollingUpStackWithOperatorPriority()
 		"1 - 2" 
 	there'll be "-1" on our stack
 */
-void TryRollingUpStack()
+void RollUPStack()
 {
 	while(	stack_index >= 3 &&
-			stack[stack_index-3].type == Item::numerical_value &&
+			(stack[stack_index-3].type == Item::numerical_value || stack[stack_index-3].type == Item::variable) &&
 			stack[stack_index-2].type == Item::mat_operator &&
 			stack[stack_index-1].type == Item::numerical_value )
 	{
-		MakeStandardMathematicOperation(	stack[stack_index-3].value,
+		MakeStandardMathematicOperation(	stack[stack_index-3],
 											stack[stack_index-2].moperator.GetType(),
-											stack[stack_index-1].value );
+											stack[stack_index-1] );
 
 		stack_index -= 2;
 	}
-}
-
-
-/*!
-	this method is reading a value or a variable or a function
-	(the normal first bracket as well) and push it into the stack
-*/
-int ReadValueVariableOrFunctionAndPushItIntoStack(Item & temp)
-{
-int code = ReadValueVariableOrFunction( temp );
-	
-	if( code == 0 )
-	{
-		if( stack_index < stack.size() )
-			stack[stack_index] = temp;
-		else
-			stack.push_back( temp );
-
-		++stack_index;
-	}
-
-	if( code == 2 )
-		// there was a final bracket, we didn't push it into the stack 
-		// (it'll be read by the 'ReadOperatorAndCheckFinalBracket' method next)
-		code = 0;
-
-
-return code;
 }
 
 
@@ -2251,27 +2343,18 @@ return code;
 	this method calculate how many parameters there are on the stack
 	and the index of the first parameter
 
-	if there aren't any parameters on the stack this method returns
+	if there are no parameters on the stack this method returns
 	'size' equals zero and 'index' pointing after the first bracket
 	(on non-existend element)
 */
-void HowManyParameters(int & size, int & index)
+void HowManyParameters(unsigned int & size, unsigned int & index)
 {
 	size  = 0;
 	index = stack_index;
 
-	if( index == 0 )
-		// we haven't put a first bracket on the stack
-		Error( err_unexpected_final_bracket );
-
-
-	if( stack[index-1].type == Item::first_bracket )
-		// empty brackets
-		return;
-
-	for( --index ; index>=1 ; index-=2 )
+	for( ; index > 0 && stack[index-1].type != Item::first_bracket ; --index )
 	{
-		if( stack[index].type != Item::numerical_value )
+		if( stack[index-1].type != Item::numerical_value )
 		{
 			/*
 				this element must be 'numerical_value', if not that means 
@@ -2281,9 +2364,6 @@ void HowManyParameters(int & size, int & index)
 		}
 
 		++size;
-
-		if( stack[index-1].type != Item::semicolon )
-			break;
 	}
 
 	if( index<1 || stack[index-1].type != Item::first_bracket )
@@ -2304,23 +2384,24 @@ void HowManyParameters(int & size, int & index)
 */
 void RollingUpFinalBracket()
 {
-int amount_of_parameters;
-int index;
+	unsigned int amount_of_parameters;
+	unsigned int index;
 
 	
 	if( stack_index<1 ||
 		(stack[stack_index-1].type != Item::numerical_value &&
 		 stack[stack_index-1].type != Item::first_bracket)
 	  )
+	{
 		Error( err_unexpected_final_bracket );
+		return;
+	}
 	
-
-	TryRollingUpStack();
+	RollUPStack();
 	HowManyParameters(amount_of_parameters, index);
 
 	// 'index' will be greater than zero
 	// 'amount_of_parameters' can be zero
-
 
 	if( amount_of_parameters==0 && !stack[index-1].function )
 		Error( err_unexpected_final_bracket );
@@ -2370,62 +2451,22 @@ int index;
 }
 
 
-/*!
-	this method is putting the operator on the stack
-*/
-
-void PushOperatorIntoStack(Item & temp)
-{
-	if( stack_index < stack.size() )
-		stack[stack_index] = temp;
-	else
-		stack.push_back( temp );
-
-	++stack_index;
-}
 
 
 
 /*!
-	this method is reading a operator and if it's a final bracket
-	it's calling RollingUpFinalBracket() and reading a operator again
+	we check wheter there are only numerical value's on the stack
 */
-int ReadOperatorAndCheckFinalBracket(Item & temp)
-{
-	do
-	{
-		if( ReadOperator(temp) == 1 )
-		{
-			/*
-				the string is finished
-			*/
-		return 1;
-		}
-
-		if( temp.type == Item::last_bracket )
-			RollingUpFinalBracket();
-
-	}
-	while( temp.type == Item::last_bracket );
-
-return 0;
-}
-
-
-/*!
-	we check wheter there are only numerical value's or 'semicolon' operators on the stack
-*/
-void CheckIntegrityOfStack()
+virtual void CheckStackIntegrity()
 {
 	for(unsigned int i=0 ; i<stack_index; ++i)
 	{
-		if( stack[i].type != Item::numerical_value &&
-			stack[i].type != Item::semicolon)
+		if( stack[i].type != Item::numerical_value )
 		{
 			/*
-				on the stack we must only have 'numerical_value' or 'semicolon' operator
+				on the stack we must only have 'numerical_value'
 				if there is something another that means
-				we probably didn't close any of the 'first' bracket
+				we probably didn't close any of the 'first' brackets
 			*/
 			Error( err_stack_not_clear );
 		}
@@ -2437,62 +2478,34 @@ void CheckIntegrityOfStack()
 /*!
 	the main loop of parsing
 */
-void Parse()
+virtual void Parse()
 {
-Item item;	
-int result_code;
-
-
-	while( true )
+	while( *pstring )
 	{
+		const char * old_pstring = pstring;
+
 		if( pstop_calculating && pstop_calculating->WasStopSignal() )
 			Error( err_interrupt );
 
-		result_code = ReadValueVariableOrFunctionAndPushItIntoStack( item );
+		ReadTokens();
+		ReadOperators();
+		RollUpStackWithOperatorsPriority();
 
-		if( result_code == 0 )
-		{
-			if( item.type == Item::first_bracket )
-				continue;
-			
-			result_code = ReadOperatorAndCheckFinalBracket( item );
-		}
-	
-		
-		if( result_code==1 || item.type==Item::semicolon )
-		{
-			/*
-				the string is finished or the 'semicolon' operator has appeared
-			*/
-
-			if( stack_index == 0 )
-				Error( err_nothing_has_read );
-			
-			TryRollingUpStack();
-
-			if( result_code == 1 )
-			{
-				CheckIntegrityOfStack();
-
-			return;
-			}
-		}			
-	
-
-		PushOperatorIntoStack( item );
-		TryRollingUpStackWithOperatorPriority();
+		if( old_pstring == pstring )
+			Error( err_internal_error ); // pstring should be incremented in ReadTokens() or ReadOperators()
 	}
+
+	if( stack_index == 0 )
+		Error( err_nothing_has_read );
+
+	RollUPStack();
+	CheckStackIntegrity();
 }
+
+
 
 /*!
 	this method is called at the end of the parsing process
-
-	on our stack we can have another value than 'numerical_values' for example
-	when someone use the operator ';' in the global scope or there was an error during
-	parsing and the parser hasn't finished its job
-
-	if there was an error the stack is cleaned up now
-	otherwise we resize stack and leave on it only 'numerical_value' items
 */
 void NormalizeStack()
 {
@@ -2502,19 +2515,12 @@ void NormalizeStack()
 		return;
 	}
 	
-	
 	/*
 		'stack_index' tell us how many elements there are on the stack,
 		we must resize the stack now because 'stack_index' is using only for parsing
 		and stack has more (or equal) elements than value of 'stack_index'
 	*/
 	stack.resize( stack_index );
-
-	for(uint i=stack_index-1 ; i!=uint(-1) ; --i)
-	{
-		if( stack[i].type != Item::numerical_value )
-			stack.erase( stack.begin() + i );
-	}
 }
 
 
@@ -2577,6 +2583,15 @@ return *this;
 
 
 /*!
+ 	dctor
+ */
+virtual ~Parser()
+{
+}
+
+
+
+/*!
 	the copying constructor
 */
 Parser(const Parser<ValueType> & p): default_stack_size(p.default_stack_size)
@@ -2604,7 +2619,7 @@ void SetBase(int b)
 */
 void SetDegRadGrad(int angle)
 {
-	if( angle >= 0 || angle <= 2 )
+	if( angle >= 0 && angle <= 2 )
 		deg_rad_grad = angle;
 }
 
@@ -2686,10 +2701,9 @@ ErrorCode Parse(const char * str)
 	error        = err_ok;
 	calculated   = false;
 
-	stack.resize( default_stack_size );
-
 	try
 	{
+		stack.resize(default_stack_size);
 		Parse();
 	}
 	catch(ErrorCode c)

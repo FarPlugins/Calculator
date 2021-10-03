@@ -1,11 +1,11 @@
 /*
  * This file is a part of TTMath Bignum Library
- * and is distributed under the (new) BSD licence.
+ * and is distributed under the 3-Clause BSD Licence.
  * Author: Tomasz Sowa <t.sowa@ttmath.org>
  */
 
 /* 
- * Copyright (c) 2006-2011, Tomasz Sowa
+ * Copyright (c) 2006-2017, Tomasz Sowa
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -65,8 +65,8 @@ namespace ttmath
 	\brief UInt implements a big integer value without a sign
 
 	value_size - how many bytes specify our value
-		on 32bit platforms: value_size=1 -> 4 bytes -> 32 bits
-		on 64bit platforms: value_size=1 -> 8 bytes -> 64 bits
+	-  on 32bit platforms: value_size=1 -> 4 bytes -> 32 bits
+	-  on 64bit platforms: value_size=1 -> 8 bytes -> 64 bits
 	value_size = 1,2,3,4,5,6....
 */
 template<uint value_size>
@@ -637,13 +637,13 @@ public:
 		this method looks for the highest set bit
 		
 		result:
-			if 'this' is not zero:
-				return value - true
-				'table_id'   - the index of a word <0..value_size-1>
+		-  	if 'this' is not zero:
+				return value - true,
+				'table_id'   - the index of a word <0..value_size-1>,
 				'index'      - the index of this set bit in the word <0..TTMATH_BITS_PER_UINT)
 
-			if 'this' is zero: 
-				return value - false
+		-  	if 'this' is zero:
+				return value - false,
 				both 'table_id' and 'index' are zero
 	*/
 	bool FindLeadingBit(uint & table_id, uint & index) const
@@ -669,13 +669,13 @@ public:
 		this method looks for the smallest set bit
 		
 		result:
-			if 'this' is not zero:
-				return value - true
-				'table_id'   - the index of a word <0..value_size-1>
+		-  	if 'this' is not zero:
+				return value - true,
+				'table_id'   - the index of a word <0..value_size-1>,
 				'index'      - the index of this set bit in the word <0..TTMATH_BITS_PER_UINT)
 
-			if 'this' is zero: 
-				return value - false
+		-  	if 'this' is zero:
+				return value - false,
 				both 'table_id' and 'index' are zero
 	*/
 	bool FindLowestBit(uint & table_id, uint & index) const
@@ -955,17 +955,20 @@ public:
 		switch( algorithm )
 		{
 		case 1:
-			return Mul1Big(ss2, result);
+			Mul1Big(ss2, result);
+			break;
 
 		case 2:
-			return Mul2Big(ss2, result);
+			Mul2Big(ss2, result);
+			break;
 
 		case 3:
-			return Mul3Big(ss2, result);
+			Mul3Big(ss2, result);
+			break;
 
 		case 100:
 		default:
-			return MulFastestBig(ss2, result);
+			MulFastestBig(ss2, result);
 		}
 	}
 
@@ -1184,17 +1187,23 @@ public:
 
 		Karatsuba multiplication:
 		Assume we have:
+
 			this = x = x1*B^m + x0
 			ss2  = y = y1*B^m + y0
+
 		where x0 and y0 are less than B^m
 		the product from multiplication we can show as:
 	    x*y = (x1*B^m + x0)(y1*B^m + y0) = z2*B^(2m) + z1*B^m + z0
 		where
+
 		    z2 = x1*y1
 			z1 = x1*y0 + x0*y1
-			z0 = x0*y0 
+			z0 = x0*y0
+
 		this is standard schoolbook algorithm with O(n^2), Karatsuba observed that z1 can be given in other form:
+
 			z1 = (x1 + x0)*(y1 + y0) - z2 - z0    / z1 = (x1*y1 + x1*y0 + x0*y1 + x0*y0) - x1*y1 - x0*y0 = x1*y0 + x0*y1 /
+
 		and to calculate the multiplication we need only three multiplications (with some additions and subtractions)			
 
 		Our objects 'this' and 'ss2' we divide into two parts and by using recurrence we calculate the multiplication.
@@ -1260,8 +1269,17 @@ private:
 			UInt<ss_size*2> res;
 			Mul2Big2<ss_size>(ss1, ss2, res);
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#endif
+
 			for(uint i=0 ; i<ss_size*2 ; ++i)
 				result[i] = res.table[i];
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 		return;
 		}
@@ -1302,6 +1320,11 @@ private:
 #pragma warning (disable : 4717)
 //warning C4717: recursive on all control paths, function will cause runtime stack overflow
 //we have the stop point in Mul3Big2() method
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #endif
 
 
@@ -1355,10 +1378,18 @@ private:
 
 		Mul3Big2<first_size>(temp.table, temp2.table, z1.table);
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#endif
+
 		// clearing the rest of z1
 		for(i=first_size*2 ; i<first_size*3 ; ++i)
 			z1.table[i] = 0;
 
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		
 		if( xc )
 		{
@@ -1375,9 +1406,18 @@ private:
 
 		if( xc && yc )
 		{
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#endif
+
 			for( i=first_size*2 ; i<first_size*3 ; ++i )
 				if( ++z1.table[i] != 0 )
-					break;  // break if there was no carry 
+ 					break;  // break if there was no carry 
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		}
 
 		// z1 = z1 - z2
@@ -1396,11 +1436,20 @@ private:
 			uint z1_size = result_size - first_size;
 			TTMATH_ASSERT( z1_size <= first_size*3 )
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#endif
+
 			for(i=z1_size ; i<first_size*3 ; ++i)
 			{
 				TTMATH_ASSERT( z1.table[i] == 0 )
 			}
-			
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+ 			
 			c = AddVector(result+first_size, z1.table, result_size-first_size, z1_size, result+first_size);
 			TTMATH_ASSERT(c==0)
 		}
@@ -1412,6 +1461,9 @@ private:
 	}
 
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #ifdef _MSC_VER
 #pragma warning (default : 4717)
@@ -1458,7 +1510,10 @@ public:
 	void MulFastestBig(const UInt<value_size> & ss2, UInt<value_size*2> & result)
 	{
 		if( value_size < TTMATH_USE_KARATSUBA_MULTIPLICATION_FROM_SIZE )
-			return Mul2Big(ss2, result);
+		{
+			Mul2Big(ss2, result);
+			return;
+		}
 
 		uint x1size  = value_size, x2size  = value_size;
 		uint x1start = 0,          x2start = 0;
@@ -1480,9 +1535,12 @@ public:
 		uint distancex2 = x2size - x2start;
 
 		if( distancex1 < 3 || distancex2 < 3 )
+		{
 			// either 'this' or 'ss2' have only 2 (or 1) items different from zero (side by side)
 			// (this condition in the future can be improved)
-			return Mul2Big3<value_size>(table, ss2.table, result, x1start, x1size, x2start, x2size);
+			Mul2Big3<value_size>(table, ss2.table, result, x1start, x1size, x2start, x2size);
+			return;
+		}
 
 
 		// Karatsuba multiplication
@@ -1560,10 +1618,10 @@ public:
 		division this = this / ss2
 		
 		return values:
-			 0 - ok
-			 1 - division by zero
-			'this' will be the quotient
-			'remainder' - remainder
+		-  0 - ok
+		-  1 - division by zero
+		-  'this' will be the quotient
+		-  'remainder' - remainder
 	*/
 	uint Div(	const UInt<value_size> & divisor,
 				UInt<value_size> * remainder = 0,
@@ -1594,9 +1652,9 @@ private:
 
 	/*!
 		return values:
-		0 - none has to be done
-		1 - division by zero
-		2 - division should be made
+		-  0 - none has to be done
+		-  1 - division by zero
+		-  2 - division should be made
 	*/
 	uint Div_StandardTest(	const UInt<value_size> & v,
 							uint & m, uint & n,
@@ -1642,13 +1700,13 @@ private:
 
 	/*!
 		return values:
-		0 - ok 
-			'm' - is the index (from 0) of last non-zero word in table ('this')
-			'n' - is the index (from 0) of last non-zero word in v.table
-		1 - v is zero 
-		2 - 'this' is zero
-		3 - 'this' is smaller than v
-		4 - 'this' is equal v
+		-  0 - ok
+			-  'm' - is the index (from 0) of last non-zero word in table ('this')
+			-  'n' - is the index (from 0) of last non-zero word in v.table
+		-  1 - v is zero
+		-  2 - 'this' is zero
+		-  3 - 'this' is smaller than v
+		-  4 - 'this' is equal v
 
 		if the return value is different than zero the 'm' and 'n' are undefined
 	*/
@@ -1689,7 +1747,7 @@ public:
 
 	/*!
 		the first division algorithm
-		radix 2
+		(radix 2)
 	*/
 	uint Div1(const UInt<value_size> & divisor, UInt<value_size> * remainder = 0)
 	{
@@ -1712,7 +1770,7 @@ public:
 
 	/*!
 		the first division algorithm
-		radix 2
+		(radix 2)
 	*/
 	uint Div1(const UInt<value_size> & divisor, UInt<value_size> & remainder)
 	{
@@ -1798,8 +1856,8 @@ public:
 		the second division algorithm
 
 		return values:
-			0 - ok
-			1 - division by zero
+		-  0 - ok
+		-  1 - division by zero
 	*/
 	uint Div2(const UInt<value_size> & divisor, UInt<value_size> * remainder = 0)
 	{
@@ -1819,8 +1877,8 @@ public:
 		the second division algorithm
 
 		return values:
-			0 - ok
-			1 - division by zero
+		-  0 - ok
+		-  1 - division by zero
 	*/
 	uint Div2(const UInt<value_size> & divisor, UInt<value_size> & remainder)
 	{
@@ -1834,8 +1892,8 @@ private:
 		the second division algorithm
 
 		return values:
-			0 - ok
-			1 - division by zero
+		-  0 - ok
+		-  1 - division by zero
 	*/
 	uint Div2Ref(const UInt<value_size> & divisor, UInt<value_size> * remainder = 0)
 	{
@@ -1866,9 +1924,9 @@ private:
 
 	/*!
 		return values:
-			0 - we've calculated the division
-			1 - division by zero
-			2 - we have to still calculate
+		-  0 - we've calculated the division
+		-  1 - division by zero
+		-  2 - we have to still calculate
 
 	*/
 	uint Div2_Calculate(const UInt<value_size> & divisor, UInt<value_size> * remainder,
@@ -1910,9 +1968,9 @@ private:
 
 	/*!
 		return values:
-			0 - we've calculated the division
-			1 - division by zero
-			2 - we have to still calculate
+		-  0 - we've calculated the division
+		-  1 - division by zero
+		-  2 - we have to still calculate
 	*/
 	uint Div2_FindLeadingBitsAndCheck(	const UInt<value_size> & divisor,
 										UInt<value_size> * remainder,
@@ -1979,7 +2037,7 @@ private:
 
 	/*!
 		return values:
-			true if divisor is equal or greater than 'this'
+		-  true if divisor is equal or greater than 'this'
 	*/
 	bool Div2_DivisorGreaterOrEqual(	const UInt<value_size> & divisor,
 										UInt<value_size> * remainder, 
@@ -2226,8 +2284,8 @@ private:
 		the bits from 'this' we're moving the same times as 'v')
 
 		return values:
-		  d - how many times we've moved
-		  return - the next-left value from 'this' (that after table[value_size-1])
+		-  d - how many times we've moved
+		-  return - the next-left value from 'this' (that after table[value_size-1])
 	*/
 	uint Div3_Normalize(UInt<value_size> & v, uint n, uint & d)
 	{
@@ -2360,9 +2418,9 @@ public:
 		binary algorithm (r-to-l)
 
 		return values:
-		0 - ok
-		1 - carry
-		2 - incorrect argument (0^0)
+		-  0 - ok
+		-  1 - carry
+		-  2 - incorrect argument (0^0)
 	*/
 	uint Pow(UInt<value_size> pow)
 	{
@@ -2440,6 +2498,7 @@ public:
 
 
 
+
 	/*!
 		this method sets n first bits to value zero
 
@@ -2505,10 +2564,18 @@ public:
 	*/
 	bool IsOnlyTheHighestBitSet() const
 	{
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#endif
+
 		for(uint i=0 ; i<value_size-1 ; ++i)
 			if( table[i] != 0 )
 				return false;
 
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		if( table[value_size-1] != TTMATH_UINT_HIGHEST_BIT )
 			return false;
 
@@ -3267,7 +3334,7 @@ public:
 		if( negative )
 			result = '-';
 
-		digits_d  = table_id; // for not making an overflow in uint type
+		digits_d  = static_cast<double>(table_id); // for not making an overflow in uint type
 		digits_d *= TTMATH_BITS_PER_UINT;
 		digits_d += index + 1;
 		digits_d *= ToStringLog2(b);
@@ -4036,7 +4103,7 @@ public:
 
 
 	/*
-		following methods are defined in:
+		Following methods are defined in:
 			ttmathuint_x86.h
 			ttmathuint_x86_64.h
 			ttmathuint_noasm.h
@@ -4097,7 +4164,7 @@ public:
 
 
 /*!
-	this specialization is needed in order to not confused the compiler "error: ISO C++ forbids zero-size array"
+	this specialization is needed in order to not confuse the compiler "error: ISO C++ forbids zero-size array"
 	when compiling Mul3Big2() method
 */
 template<>

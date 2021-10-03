@@ -1318,7 +1318,6 @@ void print_repeating_decimal(std::wstring & s, SArg val, int num_lim, bool group
 		ttmath::Conv conv = CalcParser::to_convs[10];
 		conv.scient_from  = CalcParser::rep_fraction_coefs.size();
 		conv.round        = -1;
-		conv.group_digits_after = INT_MAX;
 		if (!group_delim)
 			conv.group = 0;
 		b.ToString(s, conv);

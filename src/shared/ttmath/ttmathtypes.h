@@ -1,11 +1,11 @@
 /*
  * This file is a part of TTMath Bignum Library
- * and is distributed under the (new) BSD licence.
+ * and is distributed under the 3-Clause BSD Licence.
  * Author: Tomasz Sowa <t.sowa@ttmath.org>
  */
 
 /* 
- * Copyright (c) 2006-2011, Tomasz Sowa
+ * Copyright (c) 2006-2019, Tomasz Sowa
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -64,16 +64,41 @@
 
 
 /*!
-	the version of the library
+	the major version of the library
 
+	the version present to the end user is constructed in this way:
+
+		TTMATH_MAJOR_VER.TTMATH_MINOR_VER.TTMATH_REVISION_VER.[prerelease if TTMATH_PRERELEASE_VER==1]
+*/
+#define TTMATH_MAJOR_VER		0
+
+/*!
+	the minor version of the library
+
+	the version present to the end user is constructed in this way:
+
+		TTMATH_MAJOR_VER.TTMATH_MINOR_VER.TTMATH_REVISION_VER.[prerelease if TTMATH_PRERELEASE_VER==1]
+*/
+#define TTMATH_MINOR_VER		9
+
+/*!
+	the revision version of the library
+
+	the version present to the end user is constructed in this way:
+
+		TTMATH_MAJOR_VER.TTMATH_MINOR_VER.TTMATH_REVISION_VER.[prerelease if TTMATH_PRERELEASE_VER==1]
+*/
+#define TTMATH_REVISION_VER		4
+
+/*!
 	TTMATH_PRERELEASE_VER is either zero or one
 	zero means that this is the release version of the library
 	(one means something like beta)
-*/
-#define TTMATH_MAJOR_VER		0
-#define TTMATH_MINOR_VER		9
-#define TTMATH_REVISION_VER		3
 
+	the version present to the end user is constructed in this way:
+
+		TTMATH_MAJOR_VER.TTMATH_MINOR_VER.TTMATH_REVISION_VER.[prerelease if TTMATH_PRERELEASE_VER==1]
+*/
 #define TTMATH_PRERELEASE_VER	1
 
 
@@ -122,7 +147,7 @@
 			_M_IX86     defined by Visual Studio, Intel C/C++, Digital Mars and Watcom C/C++
 
 			amd64 architecture:
-			__x86_64__  defined by GNU C and Sun Studio
+			__x86_64__  defined by GNU C, CLANG (LLVM) and Sun Studio
 			_M_X64  	defined by Visual Studio
 
 			asm version is available only for x86 or amd64 platforms
@@ -134,7 +159,8 @@
 
 	#if !defined _MSC_VER && !defined __GNUC__
 		/*!
-			another compilers than MS VC or GCC by default use no asm version
+			another compilers than MS VC or GCC or CLANG (LLVM) by default use no asm version
+			(CLANG defines __GNUC__ too)
 		*/
 		#define TTMATH_NOASM
 	#endif
@@ -201,16 +227,20 @@ namespace ttmath
 
 #else
 
-	/*!
-		on 64bit platforms one word (uint, sint) will be equal 64bits
-	*/
 	#ifdef _MSC_VER
 		/* in VC 'long' type has 32 bits, __int64 is VC extension */
 		typedef unsigned __int64 uint;
 		typedef signed   __int64 sint;
 	#else
-		typedef unsigned long uint;
-		typedef signed   long sint;
+		/*!
+			on 64bit platforms one word (uint, sint) will be equal 64bits
+		*/
+		typedef uint64_t uint;
+
+		/*!
+			on 64bit platforms one word (uint, sint) will be equal 64bits
+		*/
+		typedef int64_t sint;
 	#endif 
 
 	/*!
@@ -316,12 +346,12 @@ namespace ttmath
 
 	/*!
 		lib type codes:
-		  asm_vc_32   - with asm code designed for Microsoft Visual C++ (32 bits)
-		  asm_gcc_32  - with asm code designed for GCC (32 bits)
-		  asm_vc_64   - with asm for VC (64 bit)
-		  asm_gcc_64  - with asm for GCC (64 bit)
-		  no_asm_32   - pure C++ version (32 bit) - without any asm code
-		  no_asm_64   - pure C++ version (64 bit) - without any asm code
+		-  asm_vc_32   - with asm code designed for Microsoft Visual C++ (32 bits)
+		-  asm_gcc_32  - with asm code designed for GCC (32 bits)
+		-  asm_vc_64   - with asm for VC (64 bit)
+		-  asm_gcc_64  - with asm for GCC (64 bit)
+		-  no_asm_32   - pure C++ version (32 bit) - without any asm code
+		-  no_asm_64   - pure C++ version (64 bit) - without any asm code
 	*/
 	enum LibTypeCode
 	{
@@ -365,7 +395,8 @@ namespace ttmath
 		err_unknown_object,
 		err_still_calculating,
 		err_in_short_form_used_function,
-		err_percent_from
+		err_percent_from,
+		err_assignment_requires_variable
 	};
 
 
@@ -406,10 +437,11 @@ namespace ttmath
 			default: true
 
 			e.g.
-			Conv c;
-			c.base_round = false;
-			Big<1, 1> a = "0.1";                       // decimal input
-			std::cout << a.ToString(c) << std::endl;   // the result is: 0.099999999
+
+				Conv c;
+				c.base_round = false;
+				Big<1, 1> a = "0.1";                       // decimal input
+				std::cout << a.ToString(c) << std::endl;   // the result is: 0.099999999
 		*/
 		bool base_round;
 
@@ -471,8 +503,6 @@ namespace ttmath
 		*/
 		uint group_digits;
 
-		// XXX:
-		uint group_digits_after;
 
 		/*!
 		*/
@@ -495,8 +525,6 @@ namespace ttmath
 			group        = 0;
 			group_digits = 3;
 			group_exp    = 0;
-			// XXX:
-			group_digits_after = INT_MAX;
 		}
 	};
 
