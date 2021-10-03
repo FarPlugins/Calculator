@@ -14,10 +14,6 @@
 #include <time.h>
 #include <windows.h>
 
-#ifdef USE_CREGEXP
-#include <regexp/clocale.h>
-#endif
-
 #include <sgml/sgml.h>
 
 #include "api.h"
@@ -121,10 +117,6 @@ bool CalcConfig()
 // loading settings
 void InitDynamicData()
 {
-#ifdef USE_CREGEXP
-	locale.cl_setlocale(towupper, towlower);
-#endif
-
 	srand((unsigned)time(0));
 
 	LoadConfig();

@@ -221,20 +221,13 @@ bool CalcParser::AddAll(bool add_user_ops_and_funcs)
 				nam.replace(idx, 2, d);
 			}
 		}
-#ifdef USE_CREGEXP
-		if (pnum->re)
-			delete pnum->re;
-		pnum->re = new CRegExp();
-		if (pnum->re)
-			pnum->re->SetExpr(nam);
-#else
+
 		if (pnum->re)
 			trex_free(pnum->re);
 		const TRexChar *err = NULL;
 		if (nam[0] == '/' && nam[nam.size() - 1] == '/')
 			nam = nam.substr(1, nam.size() - 2);
 		pnum->re = trex_compile(nam.c_str(), &err);
-#endif
 
 		if (wcscmp(pnum->mean, L"op0"))
 		{
@@ -479,11 +472,7 @@ bool CalcParser::parse_number(SArg *value, const wchar_t *curpos, wchar_t **endp
 	bool sm_res;
 	int sm_num;
 
-#ifdef USE_CREGEXP
-	SMatches sm;
-#else
 	TRexMatch sm;
-#endif
 
 	bool res = false;
 
@@ -507,18 +496,11 @@ bool CalcParser::parse_number(SArg *value, const wchar_t *curpos, wchar_t **endp
 			continue;
 		}
 		
-#ifdef USE_CREGEXP
-		sm_res = tmp->re->Parse(curpos, &sm);
-		sm_num = sm.CurMatch - 1;
-		sm_begin = sm.s[0];
-		sm_end = sm.e[0];
-#else
 		const wchar_t *sm_b, *sm_e;
 		sm_res = trex_search(tmp->re, curpos, &sm_b, &sm_e) != 0;
 		sm_begin = (int)(sm_b - curpos);
 		sm_end   = (int)(sm_e - curpos);
 		sm_num = trex_getsubexpcount(tmp->re);
-#endif
 
 		if (sm_res && sm_num >= 0 && sm_begin == 0 && sm_end > 0 && (sm_end - sm_begin) > max_match)
 		{
@@ -534,14 +516,10 @@ bool CalcParser::parse_number(SArg *value, const wchar_t *curpos, wchar_t **endp
 				SArg r = 0;
 				if (sm_num > 1)
 				{
-#ifdef USE_CREGEXP
-					sm_begini = sm.s[1];
-					sm_leni = sm.e[1] - sm.s[1];
-#else
 					trex_getsubexp(tmp->re, 1, &sm);
 					sm_begini = (int)(sm.begin - curpos);
 					sm_leni = sm.len;
-#endif
+
 					if (!_wcsicmp(tmp->mean, L"op0"))	// simple case goes first...
 					{
 						if (sm_begini >= 0 && sm_begini + sm_leni <= (int)wcslen(curpos))
@@ -607,14 +585,9 @@ bool CalcParser::parse_number(SArg *value, const wchar_t *curpos, wchar_t **endp
 						
 						for (cm = 1; cm < sm_num; cm++)
 						{
-#ifdef USE_CREGEXP
-							sm_begini = sm.s[cm];
-							sm_leni = sm.e[cm] - sm.s[cm];
-#else
 							trex_getsubexp(tmp->re, cm, &sm);
 							sm_begini = (int)(sm.begin - curpos);
 							sm_leni = sm.len;
-#endif
 
 							if (sm_begini >= 0 && sm_begini + sm_leni <= (int)wcslen(curpos))
 							{
@@ -742,17 +715,10 @@ bool CalcParser::ProcessAddons()
 		tmp = tmp->next;
 	}
 
-#ifdef USE_CREGEXP
-	const wchar_t *submask = L"/\\{([^\\{\\}]+?)\\}/";
-	CRegExp re;
-	SMatches sm;
-	re.SetExpr(submask);
-#else
 	const wchar_t *submask = L"\\{([^\\{\\}]+?)\\}";
 	const TRexChar *err = NULL;
 	TRex *re = trex_compile(submask, &err);
 	TRexMatch sm;
-#endif
 
 	// just in case there's no declared addons...
 	if (main_addons_num < 1)
@@ -781,16 +747,6 @@ bool CalcParser::ProcessAddons()
 		{
 			int sm_start[2], sm_len[2];
 
-#ifdef USE_CREGEXP
-			if (!re.Parse(a.expr.c_str(), &sm))
-				break;
-			if (sm.CurMatch < 2 || sm.s[1] < 0 || sm.e[1] > a.expr.length())
-				break;
-			sm_start[0] = sm.s[0];
-			sm_start[1] = sm.s[1];
-			sm_len[0] = sm.e[0] - sm.s[0];
-			sm_len[1] = sm.e[1] - sm.s[1];
-#else
 			const wchar_t *str = a.expr.c_str(), *str_s, *str_e;
 
 			if (!trex_search(re, str, &str_s, &str_e))
@@ -804,7 +760,7 @@ bool CalcParser::ProcessAddons()
 			trex_getsubexp(re, 1, &sm);
 			sm_start[1] = (int)(sm.begin - str);
 			sm_len[1] = sm.len;
-#endif
+
 			a.parts.resize(a.parts.size() + 1);
 			CalcAddonPart &part = a.parts[a.parts.size() - 1];
 			
@@ -823,9 +779,7 @@ bool CalcParser::ProcessAddons()
 		tmp = tmp->next;
 	}
 
-#ifndef USE_CREGEXP
 	trex_free(re);
-#endif
 
 	return true;
 }

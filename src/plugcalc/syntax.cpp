@@ -35,11 +35,7 @@ SSyntax::~SSyntax()
 	if (name) delete [] name;
 	if (name_set) delete [] name_set;
 	if (mean) delete [] mean;
-#ifdef USE_CREGEXP
-	if (re) delete re;
-#else
 	if (re) trex_free(re);
-#endif
 }
 
 SVars::SVars()

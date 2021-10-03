@@ -12,10 +12,6 @@
 #include <stdlib.h>
 #include <wchar.h>
 
-#ifdef USE_CREGEXP
-// you can disable clocale class - but import string services
-#include<regexp/clocale.h>
-#endif
 #include<sgml/sgml.h>
 #include<sgml/tools.cpp>
 

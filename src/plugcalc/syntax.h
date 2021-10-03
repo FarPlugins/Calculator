@@ -9,11 +9,8 @@
 #ifndef SYNTAX_H
 #define SYNTAX_H
 
-#ifdef USE_CREGEXP
-#include <regexp/cregexp.h>
-#else
 #include <trex/trex.h>
-#endif
+
 
 enum CALC_ADDON_FLAGS
 {
@@ -35,12 +32,8 @@ struct SSyntax
   	wchar_t *name_set;	// XXX:
   	wchar_t *mean;
 
-#ifdef USE_CREGEXP	
-	CRegExp *re;
-#else
 	TRex *re;
-#endif
-	
+
 	union
 	{
 		int priority;
