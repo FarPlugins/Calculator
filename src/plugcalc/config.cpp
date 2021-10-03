@@ -112,11 +112,11 @@ static const struct
 	{ CALC_DI_FIXEDIT,     22,  0, 22,  0, 0, 0, (int *)sizeof(props.args), props.args },
 	{ CALC_DI_CHECKBOX,    25,  0,  0,  0, 0, mConfigUseRegional, &props.use_regional, nullptr },
 	
-	{ CALC_DI_TEXT,         5, -1,  0,  0, CALC_DIF_BOXCOLOR|CALC_DIF_SEPARATOR, 0, NULL, NULL },
+	{ CALC_DI_TEXT,         5, -1,  0,  0, CALC_DIF_BOXCOLOR|CALC_DIF_SEPARATOR, 0, nullptr, nullptr },
 	
-	{ CALC_DI_BUTTON,       0, -1,  0,  0, CALC_DIF_CENTERGROUP | CALC_DIF_DEFAULTBUTTON, mOk, NULL, NULL },
-	{ CALC_DI_BUTTON,       0,  0,  0,  0, CALC_DIF_CENTERGROUP, mCancel, NULL, NULL },
-	{ CALC_DI_BUTTON,       0,  0,  0,  0, CALC_DIF_CENTERGROUP|CALC_DIF_BTNNOCLOSE|CALC_DIF_DISABLE, mAdvanced, NULL, NULL },
+	{ CALC_DI_BUTTON,       0, -1,  0,  0, CALC_DIF_CENTERGROUP | CALC_DIF_DEFAULTBUTTON, mOk, nullptr, nullptr },
+	{ CALC_DI_BUTTON,       0,  0,  0,  0, CALC_DIF_CENTERGROUP, mCancel, nullptr, nullptr },
+	{ CALC_DI_BUTTON,       0,  0,  0,  0, CALC_DIF_CENTERGROUP|CALC_DIF_BTNNOCLOSE|CALC_DIF_DISABLE, mAdvanced, nullptr, nullptr },
 };
 
 
@@ -133,13 +133,13 @@ BOOL LoadConfig()
 		if (param_table[i].sval)
 		{
 			std::wstring str;
-			if (api->SettingsGet(param_table[i].reg_name, &str, NULL))
+			if (api->SettingsGet(param_table[i].reg_name, &str, nullptr))
 				wcsncpy(param_table[i].sval, str.c_str(), (int)param_table[i].ival / sizeof(wchar_t));
 			else
 				wcsncpy(param_table[i].sval, param_table[i].def_value, (int)param_table[i].ival / sizeof(wchar_t));
 		} else
 		{
-			if (!api->SettingsGet(param_table[i].reg_name, NULL, (DWORD *)param_table[i].ival))
+			if (!api->SettingsGet(param_table[i].reg_name, nullptr, (DWORD *)param_table[i].ival))
 				*param_table[i].ival = _wtoi(param_table[i].def_value);
 		}
 	}
@@ -155,11 +155,11 @@ BOOL SaveConfig()
 		if (param_table[i].sval)
 		{
 			std::wstring str = param_table[i].sval;
-			api->SettingsSet(param_table[i].reg_name, &str, NULL);
+			api->SettingsSet(param_table[i].reg_name, &str, nullptr);
 		}
 		else
 		{
-			api->SettingsSet(param_table[i].reg_name, NULL, (DWORD *)param_table[i].ival);
+			api->SettingsSet(param_table[i].reg_name, nullptr, (DWORD *)param_table[i].ival);
 		}
 	}
 	api->SettingsEnd();
@@ -198,13 +198,13 @@ BOOL CheckConfig()
 			{
 				GetLocaleInfo(GetSystemDefaultLCID(), LOCALE_SDECIMAL, s, 2);
 			}
-			if (wcschr(L".,", s[0]) == NULL)
+			if (wcschr(L".,", s[0]) == nullptr)
 				s[0] = '.';
 			decimal = s[0];
 			s[1] = '\0';
 			break;
 		case CALC_PARAM_CHECK_ARGS:
-			if (s[0] == '\0' || wcschr(L",;.:", s[0]) == NULL)
+			if (s[0] == '\0' || wcschr(L",;.:", s[0]) == nullptr)
 				s[0] = ',';
 			if (s[0] == decimal)
 				s[0] = (decimal == L',') ? ';' : ',';
@@ -216,7 +216,7 @@ BOOL CheckConfig()
 			{
 				GetLocaleInfo(GetSystemDefaultLCID(), LOCALE_SMONTHOUSANDSEP , s, 2);
 			}
-			if (wcschr(L" ,'`\xa0", s[0]) == NULL)
+			if (wcschr(L" ,'`\xa0", s[0]) == nullptr)
 				s[0] = ' ';
 			if (s[0] == decimal || s[0] == args)
 				s[0] = ' ';

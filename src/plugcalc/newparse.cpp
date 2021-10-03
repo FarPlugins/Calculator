@@ -1016,7 +1016,7 @@ void CalcParser::FillDialogData(PSgmlEl Base, bool case_sensitive, const wchar_t
 				de->input = new CalcAddonPart();
 				de->input->expr = input;
 			}
-			else if (scale != NULL)
+			else if (scale != nullptr)
 			{
 				//  check if constant expression is used
 				std::wstring tmpscale = ReplaceDelims(scale);
@@ -1103,23 +1103,23 @@ bool CalcParser::AddLexem(PSyntax &syntax, PSgmlEl Ch, PSgmlEl set, bool case_se
 	}
   
 	nxt = new SSyntax;
-	nxt->name = name ? new wchar_t[wcslen(name)+1] : NULL;
-	nxt->name_set = name_set ? new wchar_t[wcslen(name_set)+1] : NULL;
-	nxt->mean = val ? new wchar_t[wcslen(val)+1] : NULL;
+	nxt->name = name ? new wchar_t[wcslen(name)+1] : nullptr;
+	nxt->name_set = name_set ? new wchar_t[wcslen(name_set)+1] : nullptr;
+	nxt->mean = val ? new wchar_t[wcslen(val)+1] : nullptr;
 
 	if (!_wcsicmp(Ch->getname(), L"op"))
 	{
 		wchar_t *val = Ch->GetChrParam(L"priority");
-		nxt->priority = val != NULL ? wcstol(val, NULL, 10) : 0;
+		nxt->priority = val != nullptr ? wcstol(val, nullptr, 10) : 0;
 	}
 	else if (!_wcsicmp(Ch->getname(), L"numeral") || !_wcsicmp(Ch->getname(), L"addon"))
 	{
 		nxt->radix = 0;
 		nxt->flags = CALC_ADDON_FLAG_NONE;
 		wchar_t *val = Ch->GetChrParam(L"format");
-		if (val == NULL)
+		if (val == nullptr)
 			val = Ch->GetChrParam(L"radix");
-		while (val != NULL)
+		while (val != nullptr)
 		{
 			static const struct
 			{
@@ -1136,10 +1136,10 @@ bool CalcParser::AddLexem(PSyntax &syntax, PSgmlEl Ch, PSgmlEl set, bool case_se
 				{ L"rep", CALC_RADIX_REPEATING, 0 },	// repeating decimal
 				{ L"con", CALC_RADIX_CONTINUED, 0 },	// continued fraction
 				{ L"delim", 0, CALC_ADDON_FLAG_DELIM },	// continued fraction
-				{ NULL, 0, 0 },
+				{ nullptr, 0, 0 },
 			};
 
-			for (int i = 0; addon_formats[i].fmt != NULL; i++)
+			for (int i = 0; addon_formats[i].fmt != nullptr; i++)
 			{
 				if (_wcsnicmp(val, addon_formats[i].fmt, wcslen(addon_formats[i].fmt)) == 0)
 				{
@@ -1152,7 +1152,7 @@ bool CalcParser::AddLexem(PSyntax &syntax, PSgmlEl Ch, PSgmlEl set, bool case_se
 			}
 			if (nxt->radix == 0)
 			{
-				nxt->radix = wcstol(val, NULL, 10);
+				nxt->radix = wcstol(val, nullptr, 10);
 			}
 			val = wcschr(val, ',');
 			if (val)
@@ -1161,15 +1161,15 @@ bool CalcParser::AddLexem(PSyntax &syntax, PSgmlEl Ch, PSgmlEl set, bool case_se
 
 	}
 	
-	if (name != NULL)
+	if (name != nullptr)
 	{
 		wcscpy(nxt->name, name);
 		if (!case_sensitive && _wcsicmp(Ch->getname(), L"addon"))	// don't make lowercase addon names
 			_wcslwr(nxt->name);
 	}
-	if (name_set != NULL)
+	if (name_set != nullptr)
 		wcscpy(nxt->name_set, name_set);
-	if (val != NULL)
+	if (val != nullptr)
 	{
 		wcscpy(nxt->mean, val);
 		if (!case_sensitive)
@@ -1593,7 +1593,7 @@ void print_string(std::wstring & s, SArg val, int radix, int num_lim, bool appen
 				conv.group = 0;
 			val.GetBig().ToString(s, conv);
 		}
-		if (append_suffix && radix >= 0 && radix <= 16 && str_suffixes[radix] != NULL)
+		if (append_suffix && radix >= 0 && radix <= 16 && str_suffixes[radix] != nullptr)
 			s += str_suffixes[radix];
 	}
 }
@@ -1602,7 +1602,7 @@ void print_string(std::wstring & s, SArg val, int radix, int num_lim, bool appen
 wchar_t *convertToString(const SArg & val, int type_idx, int num_lim, bool append_suffix, bool pad_zeroes, bool group_delim, CALC_ERROR *error_code)
 {
 	static const wchar_t *pad_string = L"0000000000000000000000000000000000000000000000000000000000000000";
-	wchar_t *str = NULL;
+	wchar_t *str = nullptr;
 	std::wstring s;
 	
 	if (num_lim == 0)
@@ -1658,7 +1658,7 @@ wchar_t *convertToString(const SArg & val, int type_idx, int num_lim, bool appen
 				*error_code = ERR_OK;
 			try
 			{
-				if (addon.parts[i].parser != NULL)
+				if (addon.parts[i].parser != nullptr)
 					Res = addon.parts[i].parser->eval(&val);
 				else
 					Res = 0;
@@ -1668,7 +1668,7 @@ wchar_t *convertToString(const SArg & val, int type_idx, int num_lim, bool appen
 				if (error_code)
 				{
 					*error_code = ec;
-					return NULL;
+					return nullptr;
 				}
 				Res = 0;
 			}
