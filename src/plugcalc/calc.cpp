@@ -9,9 +9,9 @@
 //  to License (see /doc/license.txt for more information).
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 #include <windows.h>
 
 #include <sgml/sgml.h>

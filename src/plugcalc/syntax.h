@@ -9,8 +9,8 @@
 #ifndef SYNTAX_H
 #define SYNTAX_H
 
+#include "sarg.h"
 #include <trex/trex.h>
-
 
 enum CALC_ADDON_FLAGS
 {

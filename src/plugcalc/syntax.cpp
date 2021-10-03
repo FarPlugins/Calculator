@@ -6,43 +6,31 @@
 //  to License (see /doc/license.txt for more information).
 //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-
-#include "newparse.h"
-#include "sarg.h"
 #include "syntax.h"
-
+#include "sarg.h"
 
 SSyntax::SSyntax()
 {
-	next = NULL;
-	name_set = NULL;
-	name = mean = NULL;
+	next = nullptr;
+	name_set = nullptr;
+	name = mean = nullptr;
 	priority = 0;
 	flags = 0;
 
-	re = NULL;
+	re = nullptr;
 }
 
 // XXX:
 SSyntax::~SSyntax()
 {
-	if (next) delete next;
-	if (name) delete [] name;
-	if (name_set) delete [] name_set;
-	if (mean) delete [] mean;
+	delete next;
+	delete [] name;
+	delete [] name_set;
+	delete [] mean;
 	if (re) trex_free(re);
 }
 
-SVars::SVars()
-{ 
-}
+SVars::SVars()= default;
 
-SVars::~SVars()
-{ 
-}
+SVars::~SVars()= default;
 

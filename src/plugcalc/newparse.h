@@ -9,7 +9,7 @@
 #define CALC_NEWPARSE_H
 
 #include <sgml/sgml.h>
-#include <hashmap/hashmap.h>
+#include <hashmap/HashMap.h>
 #undef min
 #undef max
 #include <mathexpression/MathExpressionBase.h>

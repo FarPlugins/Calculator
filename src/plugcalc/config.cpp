@@ -6,15 +6,10 @@
 //  to License (see /doc/license.txt for more information).
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 #include <windows.h>
-
 #include <algorithm>
-
-#include <sgml/sgml.h>
-
 #include "api.h"
 #include "newparse.h"
 #include "calc.h"

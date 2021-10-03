@@ -6,16 +6,10 @@
 //  to License (see /doc/license.txt for more information).
 //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
+#include <cstdlib>
 #include <limits>
-
 #include "newparse.h"
 #include "sarg.h"
-#include "syntax.h"
 
 
 SArg::SArg()
