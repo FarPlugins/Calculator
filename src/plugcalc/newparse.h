@@ -9,7 +9,7 @@
 #define CALC_NEWPARSE_H
 
 #include <sgml/sgml.h>
-#include <hashmap/HashMap.h>
+#include <unordered_map>
 #undef min
 #undef max
 #include <mathexpression/MathExpressionBase.h>
@@ -178,7 +178,7 @@ protected:
 	class UserFunctionList : public std::vector<CalcParser *>
 	{
 	public:
-		UserFunctionList()	{}
+		UserFunctionList()	= default;
 		~UserFunctionList();
 	};
 
@@ -186,8 +186,7 @@ protected:
 	CALC_ERROR math_error;
 	string func_name;
 
-	static ag::hash_map<std::wstring, CalcParser *, StrHashFunc> user_bin_ops, user_un_ops;
-	typedef ag::hash_map<std::wstring, CalcParser *, StrHashFunc>::iterator  opiter;
+	static std::unordered_map<std::wstring, CalcParser *> user_bin_ops, user_un_ops;
 
 protected:
 	static UserFunctionList *user_funcs;

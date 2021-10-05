@@ -573,8 +573,7 @@ public:
 			if ((ir->Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED) ||
 				(ir->Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED))
 			{
-				if (coreReturn)
-					free(coreReturn);
+				free(coreReturn);
 				coreReturn = _wcsdup(str.c_str());
 				Close(CALC_EDIT_ID);
 				return TRUE;
@@ -795,8 +794,7 @@ public:
 			if ((ir->Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED) ||
 					(ir->Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED))
 			{
-				if (coreReturn)
-					free(coreReturn);
+				free(coreReturn);
 				coreReturn = _wcsdup(str.c_str());
 				Close(CALC_EDIT_ID);
 			}
@@ -1098,7 +1096,7 @@ void CalcShowDialog()
 
 SDialogElem::SDialogElem()
 {
-	Next = 0;
+	Next = nullptr;
 	addon_idx = -1;
 	input = nullptr;
 	scale_expr = nullptr;
@@ -1106,22 +1104,19 @@ SDialogElem::SDialogElem()
 
 SDialogElem::~SDialogElem()
 {
-	if (Next) 
-		delete Next;
-	if (input)
-		delete input;
-	if (scale_expr)
-		delete scale_expr;
+	delete Next;
+	delete input;
+	delete scale_expr;
 }
 
 SDialogData::SDialogData()
 {
-	Next = 0;
-	Elem = 0;
+	Next = nullptr;
+	Elem = nullptr;
 }
 
 SDialogData::~SDialogData()
 {
 	delete Elem;
-	if (Next) delete Next;
+	delete Next;
 }

@@ -41,7 +41,7 @@ std::vector<CalcAddon> CalcParser::addons;
 unsigned CalcParser::main_addons_num = 0;
 wchar_t CalcParser::delim_decimal, CalcParser::delim_args, CalcParser::delim_digit;
 
-ag::hash_map<std::wstring, CalcParser *, StrHashFunc> CalcParser::user_bin_ops, CalcParser::user_un_ops;
+std::unordered_map<std::wstring, CalcParser *> CalcParser::user_bin_ops, CalcParser::user_un_ops;
 CalcParser::UserFunctionList *CalcParser::user_funcs = nullptr;
 ttmath::Conv CalcParser::from_convs[17], CalcParser::to_convs[17];
 
@@ -68,8 +68,7 @@ CalcAddonPart::CalcAddonPart(const CalcAddonPart & p)
 
 CalcAddonPart::~CalcAddonPart()
 {
-	if (parser != nullptr)
-		delete parser;
+  delete parser;
 }
 
 CalcParser::CalcParser()
@@ -293,23 +292,18 @@ bool CalcParser::AddAll(bool add_user_ops_and_funcs)
 		op = Ops;
 
 		// delete all parsers
-		opiter it, itend;
-		for (it = user_bin_ops.begin(), itend = user_bin_ops.end(); it != itend; ++it) 
+		for (const auto& it :user_bin_ops)
 		{
-			std::pair<std::wstring, CalcParser *> & mp = *it;
-			if (&mp)
-				delete mp.second; 
+			delete it.second;
 		}
-		for (it = user_un_ops.begin(), itend = user_un_ops.end(); it != itend; ++it) 
+		for (const auto& it : user_un_ops)
 		{
-			std::pair<std::wstring, CalcParser *> & mp = *it;
-			if (&mp)
-				delete mp.second; 
+      delete it.second;
 		}
 		user_bin_ops.clear();
 		user_un_ops.clear();
-		user_bin_ops.growCapacity(100);
-		user_un_ops.growCapacity(10);
+		user_bin_ops.reserve(100);
+		user_un_ops.reserve(10);
 		while (op)
 		{
 			// check for num. args
@@ -355,44 +349,39 @@ bool CalcParser::AddAll(bool add_user_ops_and_funcs)
 			consts = consts->next;
 		}
 
-		if (user_funcs)
-			delete user_funcs;
+    delete user_funcs;
 		user_funcs = new UserFunctionList();
 
 		PSyntax func = Functs;
 		while (func)
 		{
 			CalcParser *p = new CalcParser();
-			if (p != nullptr)
-			{
-				// check for num. args
-				int num_args;
-				p->func_name = func->name;
-				if (func->mean != nullptr)
-				{
-					for (num_args = 0; ; num_args++)
-					{
-						wchar_t arg[5];
-						swprintf(arg, L"op%d", num_args);
-						if (wcsstr(func->mean, arg) == nullptr)
-							break;
-						p->add_argument(arg, num_args);
-					}
+      // check for num. args
+      int num_args;
+      p->func_name = func->name;
+      if (func->mean != nullptr)
+      {
+        for (num_args = 0; ; num_args++)
+        {
+          wchar_t arg[5];
+          swprintf(arg, L"op%d", num_args);
+          if (wcsstr(func->mean, arg) == nullptr)
+            break;
+          p->add_argument(arg, num_args);
+        }
 
-					std::wstring mean = ReplaceDelims(func->mean);
-					if (p->parse(mean.c_str()))
-					{
-						allFunctions.add(p->func_name, (const MathExpressionBase<SArg> *)p, L"");
-						user_funcs->push_back(p);
-					} else
-					{
-						delete p;
-					}
-				} else
-				{
-					delete p;
-				}
-			}
+        std::wstring mean = ReplaceDelims(func->mean);
+        if (p->parse(mean.c_str()))
+        {
+          allFunctions.add(p->func_name, (const MathExpressionBase<SArg> *)p, L"");
+          user_funcs->push_back(p);
+        } else
+        {
+          delete p;
+        }
+      } else {
+        delete p;
+      }
 			
 			
 			func = func->next;
@@ -411,7 +400,7 @@ std::wstring CalcParser::ReplaceDelims(const wchar_t *str)
 		d.append(1, delim_args);
 		for (;;)
 		{
-			int idx = (int)s.find(L",");
+			int idx = (int)s.find(L',');
 			if (idx == std::wstring::npos)
 				break;
 			s.replace(idx, 1, d);
@@ -423,7 +412,7 @@ std::wstring CalcParser::ReplaceDelims(const wchar_t *str)
 		d.append(1, delim_decimal);
 		for (;;)
 		{
-			int idx = (int)s.find(L".");
+			int idx = (int)s.find(L'.');
 			if (idx == std::wstring::npos)
 				break;
 			s.replace(idx, 1, d);
@@ -816,11 +805,11 @@ int CalcParser::GetNumDialogs()
 bool CalcParser::InitTables(int rep_fraction_max_start, int rep_fraction_max_period, int cont_fraction_max)
 {
 	int i;
-	if (Consts)   delete Consts;
-	if (Ops)    delete Ops;
-	if (Functs) delete Functs;
-	if (Addons) delete Addons;
-	if (Numerals) delete Numerals;
+	delete Consts;
+	delete Ops;
+	delete Functs;
+	delete Addons;
+	delete Numerals;
 	Consts = Ops = Functs = Addons = Numerals = nullptr;
 
 	allFunctions.remove_all();
@@ -865,8 +854,7 @@ bool CalcParser::ProcessData(PSgmlEl BaseRc, bool case_sensitive)
 	PSgmlEl Base, El, Set;
 	wchar_t lang_name[32];
 
-	if (DialogData) 
-		delete DialogData;
+  delete DialogData;
 	DialogData = 0;
 	DialogsNum = 0;
 
@@ -1264,7 +1252,7 @@ int limit_number(int num_lim, const SArg & val, int radix)
 	b.Abs();
 	if (b <= e_10[0] || b >= e10[0])
 	{
-		for (int i = 1; (b >= e10[i] || b <= e_10[i]) && i < 9; i++)
+		for (int i = 1; i < 9 && (b >= e10[i] || b <= e_10[i]); i++)
 			num_lim--;
 	} 
 	else if (radix != CALC_RADIX_EXPONENTIAL)
@@ -1426,7 +1414,7 @@ void print_continued_decimal(std::wstring & s, SArg val, int num_lim, bool group
 		// a little precision correction
 		if (ttmath::Abs(b - b1) < CalcParser::rep_fraction_thr)
 		{
-			bi++;
+			++bi;
 			b = 0;
 		}
 
@@ -1509,7 +1497,7 @@ void CalcParser::GetFraction(Big b, BigInt *numer, BigInt *denom)
 				// a little precision correction
 				if (ttmath::Abs(b - b1) < CalcParser::rep_fraction_thr)
 				{
-					bi++;
+					++bi;
 					b = 0;
 				}
 
@@ -1752,8 +1740,8 @@ SArg CalcParser::builtin_binary_op(const SArg & op0, const SArg & op1)
 SArg CalcParser::binary_op(const SArg & op0, const SArg & op1)
 {
 	/// TODO: optimise!
-	opiter op = user_bin_ops.find(cur_op_name);
-	opiter opend = user_bin_ops.end();
+	auto op = user_bin_ops.find(cur_op_name);
+	auto opend = user_bin_ops.end();
 	if (op != opend)
 	{
 		// check for num. args
@@ -1768,8 +1756,8 @@ SArg CalcParser::binary_op(const SArg & op0, const SArg & op1)
 
 SArg CalcParser::unary_op(const SArg & op0)
 {
-	opiter op = user_un_ops.find(cur_op_name);
-	opiter opend = user_un_ops.end();
+	auto op = user_un_ops.find(cur_op_name);
+	auto opend = user_un_ops.end();
 	if (op != opend)
 	{
 		// check for num. args
@@ -1785,6 +1773,6 @@ SArg CalcParser::unary_op(const SArg & op0)
 
 CalcParser::UserFunctionList::~UserFunctionList()
 {
-	for (iterator ii = begin(); ii != end(); ii++)
+	for (iterator ii = begin(); ii != end(); ++ii)
 		delete *ii;
 }

@@ -209,7 +209,7 @@ public:
 	{
 		if (msg == DN_EDITCHANGE)
 		{
-			delete param2;
+			delete (CalcDialogItem*) param2;
 		}
 		return 0;
 	}
@@ -475,9 +475,6 @@ CalcApi *CreateApiFar3(void *info)
 		return nullptr;
 
 	CalcApiFar3 *api = new CalcApiFar3();
-
-	if (api == nullptr)
-		return nullptr;
 
 	memset(&api->Info, 0, sizeof(api->Info));
 	memmove(&api->Info, psi, (psi->StructSize > sizeof(api->Info)) ? sizeof(api->Info) : psi->StructSize);

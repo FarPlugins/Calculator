@@ -7,7 +7,6 @@
 //
 
 #include <cstdlib>
-#include <ctime>
 #include <windows.h>
 #include <algorithm>
 #include "api.h"
@@ -66,7 +65,7 @@ static const struct
 	{ &props.rep_fraction_max_period, nullptr, L"repFractionMaxPeriod", L"128", CALC_PARAM_CHECK_FRAC },
 	{ &props.cont_fraction_max, nullptr, L"contFractionMax", L"64", CALC_PARAM_CHECK_FRAC },
 
-	{ nullptr, nullptr, L"", 0, CALC_PARAM_CHECK_BOOL },
+	{ nullptr, nullptr, L"", nullptr, CALC_PARAM_CHECK_BOOL },
 };
 
 static const struct 
@@ -187,8 +186,6 @@ BOOL CheckConfig()
 			*v = std::min(std::max(*v, 0), 100);
 			break;
 		case CALC_PARAM_CHECK_LENGTH:
-			*v = std::min(std::max(*v, 16), 512);
-			break;
 		case CALC_PARAM_CHECK_FRAC:
 			*v = std::min(std::max(*v, 16), 512);
 			break;
