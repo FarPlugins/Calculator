@@ -6,7 +6,7 @@ enum
 	mName, mMenuName, mConfigName, mLang,
 	
 	mDialogs, 
-	mOk, mSave, mCancel, mAdvanced,
+	mOk, mCancel,
 
 	mConfigShowResults,
 	mConfigCaseSensitive,

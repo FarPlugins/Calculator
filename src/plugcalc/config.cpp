@@ -116,7 +116,6 @@ static const struct
 	
 	{ CALC_DI_BUTTON,       0, -1,  0,  0, CALC_DIF_CENTERGROUP | CALC_DIF_DEFAULTBUTTON, mOk, nullptr, nullptr },
 	{ CALC_DI_BUTTON,       0,  0,  0,  0, CALC_DIF_CENTERGROUP, mCancel, nullptr, nullptr },
-	{ CALC_DI_BUTTON,       0,  0,  0,  0, CALC_DIF_CENTERGROUP|CALC_DIF_BTNNOCLOSE|CALC_DIF_DISABLE, mAdvanced, nullptr, nullptr },
 };
 
 
@@ -240,9 +239,8 @@ bool ConfigDialog()
 
 	int ExitCode, ok_id = -2;
 	
-	CalcDialogItem *dlg = new CalcDialogItem[num];
-	if (!dlg)
-		return false;
+	auto *dlg = new CalcDialogItem[num];
+
 	int Y1 = 0;
 	for (int i = 0; i < num; i++)
 	{
@@ -278,7 +276,7 @@ bool ConfigDialog()
 	dlg[0].Y2 = Y1 + 1;
 
 	DlgConfig cfg;
-	if (!cfg.Init(CALC_DIALOG_CONFIG, -1, -1, 58, 16, L"Config", dlg, num))
+	if (!cfg.Init(CALC_DIALOG_CONFIG, -1, -1, 58, 15, L"Config", dlg, num))
 		return false;
 
 	ExitCode = (int)cfg.Run();
