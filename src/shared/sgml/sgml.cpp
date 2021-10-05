@@ -7,25 +7,25 @@
 
 // creates object tree structure on html/xml files
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <wchar.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <cwchar>
 
 #include<sgml/sgml.h>
 #include<sgml/tools.cpp>
 
 CSgmlEl::CSgmlEl()
 {
-  eparent= 0;
-  enext  = 0;
-  eprev  = 0;
-  echild = 0;
+  eparent= nullptr;
+  enext  = nullptr;
+  eprev  = nullptr;
+  echild = nullptr;
   chnum  = 0;
   type   = EBASEEL;
 
   name[0] = 0;
-  content= 0;
+  content= nullptr;
   contentsz = 0;
   parnum = 0;
 }
@@ -37,8 +37,7 @@ CSgmlEl::~CSgmlEl()
 	if (echild) 
 		echild->destroylevel();
 	// if (name) delete[] name;
-	if (content) 
-		delete[] content;
+  delete[] content;
 	for (int i = 0; i < parnum; i++)
 	{
 		if (params[i][0]) 
@@ -91,8 +90,8 @@ wchar_t *CSgmlEl::readfile(const wchar_t *basename, const wchar_t *fname, const 
 	}
 #endif
 	FILE *fp = _wfopen(tmpfname, L"rb");
-	if (fp == NULL)
-		return NULL;
+	if (fp == nullptr)
+		return nullptr;
 	unsigned len, num_read = 0;
 
 	unsigned char bom[2];
@@ -106,7 +105,7 @@ wchar_t *CSgmlEl::readfile(const wchar_t *basename, const wchar_t *fname, const 
 	if (len < 2)
 	{
 		fclose(fp);
-		return NULL;
+		return nullptr;
 	}
 
 	if (bom[0] != 0xff && bom[1] != 0xfe)
@@ -118,7 +117,7 @@ wchar_t *CSgmlEl::readfile(const wchar_t *basename, const wchar_t *fname, const 
 	unsigned wl = (len + 1) / 2;
 	wchar_t *src;
 	
-	if (buf == NULL)
+	if (buf == nullptr)
 	{
 		src = (wchar_t *)malloc(len + 4);
 		if (bufsize)
@@ -128,7 +127,7 @@ wchar_t *CSgmlEl::readfile(const wchar_t *basename, const wchar_t *fname, const 
 	else
 	{
 		if (!bufsize || !pos)
-			return NULL;
+			return nullptr;
 		src = (wchar_t *)realloc((void *)buf, *bufsize * 2 + len + 4);
 		memmove(src + pos + wl, src + pos, (*bufsize - pos) * 2);
 		*bufsize += wl;
@@ -152,7 +151,7 @@ wchar_t *CSgmlEl::readfile(const wchar_t *basename, const wchar_t *fname, const 
 	if (num_read != len)
 	{
 		free(src);
-		return NULL;
+		return nullptr;
 	}
 
 	return src;
@@ -160,13 +159,13 @@ wchar_t *CSgmlEl::readfile(const wchar_t *basename, const wchar_t *fname, const 
 
 bool CSgmlEl::parse(const wchar_t *basename, const wchar_t *fname)
 {
-	PSgmlEl Child, Parent, Next = 0;
+	PSgmlEl Child, Parent, Next = nullptr;
 	int i, j, lins, line;
 	int ls, le, rs, re, empty;
 
 	int sz = 0;
-	wchar_t *src = readfile(basename, fname, NULL, 0, &sz);
-	if (src == NULL)
+	wchar_t *src = readfile(basename, fname, nullptr, 0, &sz);
+	if (src == nullptr)
 		return false;
 
 	// start object - base
@@ -200,7 +199,7 @@ bool CSgmlEl::parse(const wchar_t *basename, const wchar_t *fname)
 					j++;
 				if (j == i) 
 					break; // empty text
-				Child = createnew(EPLAINEL,0,Next);
+				Child = createnew(EPLAINEL,nullptr,Next);
 				Child->init();
 				Child->setcontent(src + lins, i - lins);
 				Next = Child;
@@ -211,7 +210,7 @@ bool CSgmlEl::parse(const wchar_t *basename, const wchar_t *fname)
 			// start or single tag
 			if (src[i+1] != '/')
 			{
-				Child = createnew(ESINGLEEL,NULL,Next);
+				Child = createnew(ESINGLEEL,nullptr,Next);
 				Child->init();
 				Next  = Child;
 				j = i+1;
@@ -328,13 +327,13 @@ bool CSgmlEl::parse(const wchar_t *basename, const wchar_t *fname)
 					Parent->type = EBLOCKEDEL;
 					Child = Parent->echild;
 					if (Child) 
-						Child->eprev = 0;
+						Child->eprev = nullptr;
 					while(Child)
 					{
 						Child->eparent = Parent;
 						Child = Child->enext;
 					}
-					Parent->enext = 0;
+					Parent->enext = nullptr;
 					Next = Parent;
 				}
 				while (src[i] != '>' && i < sz) 
@@ -420,7 +419,7 @@ ElType  CSgmlEl::gettype()
 wchar_t *CSgmlEl::getname()
 {
 	if (!*name) 
-		return NULL;
+		return nullptr;
 	return name;
 }
 
@@ -437,7 +436,7 @@ int CSgmlEl::getcontentsize()
 wchar_t* CSgmlEl::GetParam(int no)
 {
 	if (no >= parnum) 
-		return NULL;
+		return nullptr;
 	return params[no][0];
 }
 
@@ -448,7 +447,7 @@ wchar_t* CSgmlEl::GetChrParam(const wchar_t *par)
 		if (!_wcsicmp(par,params[i][0]))
 			return params[i][1];
     }
-	return NULL;
+	return nullptr;
 }
 
 bool CSgmlEl::GetIntParam(const wchar_t *par, int *result)
@@ -523,7 +522,7 @@ PSgmlEl CSgmlEl::fnext()
 	{
 		El = El->eparent;
 		if (!El) 
-			return 0;
+			return nullptr;
 	}
 	return El->enext;
 }
