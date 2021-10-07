@@ -453,7 +453,7 @@ protected:
 
 CalcApi *CreateApiFar3(void *info)
 {
-	PluginStartupInfo *psi = (PluginStartupInfo *)info;
+	auto *psi = (PluginStartupInfo *)info;
 
 	if (psi == nullptr || psi->StructSize < sizeof(PluginStartupInfo) ||			// far container is too old
 		psi->AdvControl == nullptr || psi->FSF == nullptr)
@@ -474,12 +474,12 @@ CalcApi *CreateApiFar3(void *info)
 	if (ret != 1 || ver.Major < 3 || ver.Major > 10)
 		return nullptr;
 
-	CalcApiFar3 *api = new CalcApiFar3();
+	auto *api_local = new CalcApiFar3();
 
-	memset(&api->Info, 0, sizeof(api->Info));
-	memmove(&api->Info, psi, (psi->StructSize > sizeof(api->Info)) ? sizeof(api->Info) : psi->StructSize);
+	memset(&api_local->Info, 0, sizeof(api_local->Info));
+	memmove(&api_local->Info, psi, (psi->StructSize > sizeof(api_local->Info)) ? sizeof(api_local->Info) : psi->StructSize);
 
-	return api;
+	return api_local;
 }
 
 void GetGlobalInfoFar3(void *ginfo, const wchar_t *name)

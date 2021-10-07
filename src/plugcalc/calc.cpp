@@ -23,8 +23,6 @@
 #include "config.h"
 #include "messages.h"
 
-
-int regAlign, regEdit, regCheck;
 bool badFar = true;
 
 wchar_t *coreReturn = nullptr;
@@ -428,7 +426,7 @@ public:
 		ResizeDialog(cur_dlg_dlg_size);
 		for (int i = 0; i < cur_dlg_items_num; i++)
 		{
-			CalcRect rect;
+			CalcRect rect{};
 			rect.Left = cur_dlg_items[i].X1;
 			rect.Top = cur_dlg_items[i].Y1;
 			rect.Right = cur_dlg_items[i].X2;
@@ -550,7 +548,7 @@ public:
 					//XXX:
 					inside_setdlgmessage = true;
 					SetText(id, str);
-					CalcCoord coord;
+					CalcCoord coord{};
 					coord.X = 0;
 					SetCursorPos(id, coord);
 					inside_setdlgmessage = false;
@@ -585,7 +583,7 @@ public:
 
 			if (!props.auto_update)
 			{
-				CalcDialogItem Item;
+				CalcDialogItem Item{};
 				Item.PtrData = str.c_str();
 				OnEditChangeInternal(param1, (void *)&Item);
 			}
@@ -600,7 +598,7 @@ public:
 
 	virtual CALC_INT_PTR OnCtrlColorDlgItem(int param1, void *param2)
 	{
-		CalcDialogItem item;
+		CalcDialogItem item{};
 		GetDlgItemShort(param1, &item);
 		if (item.Flags & CALC_DIF_BOXCOLOR)
 		{
@@ -720,7 +718,7 @@ public:
 
 		for (int i = 0; i < cur_dlg_items_num; i++)
 		{
-			CalcRect rect;
+			CalcRect rect{};
 			rect.Left = cur_dlg_items[i].X1;
 			rect.Top = cur_dlg_items[i].Y1;
 			rect.Right = cur_dlg_items[i].X2;
@@ -757,7 +755,7 @@ public:
 		std::wstring str;
 		GetText(CALC_EDIT_ID, str);
 		AddHistory(CALC_EDIT_ID, str);
-		CalcRect sr;
+		CalcRect sr{};
 		GetDlgRect(&sr);
 		//api->SettingsSet(L"calcX", nullptr, sr.Left);
 		//api->SettingsSet(L"calcY", nullptr, sr.Top);
@@ -780,7 +778,7 @@ public:
 				str += coreReturn;
 				SetText(CALC_EDIT_ID, str);
 				// to update item2
-				CalcDialogItem item;
+				CalcDialogItem item{};
 				GetDlgItemShort(param1, &item);
 				EditChange(CALC_EDIT_ID, item);
 			}
@@ -813,7 +811,7 @@ public:
 			
 			if (param1 >= addons_info.radio_id1 && param1 <= addons_info.radio_id2 && curRadio != param1)
 			{
-				CalcDialogItem fdi;
+				CalcDialogItem fdi{};
 				GetDlgItemShort(curRadio, &fdi);
 				fdi.Selected = 0;
 				SetDlgItemShort(curRadio, fdi);
@@ -854,7 +852,7 @@ public:
 			} else
 			{
 				// to update item2
-				CalcDialogItem item;
+				CalcDialogItem item{};
 				GetDlgItemShort(param1, &item);
 				EditChange(CALC_EDIT_ID, item);
 			}
@@ -870,7 +868,7 @@ public:
 				SetSelection(CALC_EDIT_ID, EditSel);
 			} else
 			{
-				CalcCoord cursor;
+				CalcCoord cursor{};
 				cursor.X = 0;
 				cursor.Y = 0;
 				SetCursorPos(CALC_EDIT_ID, cursor);
@@ -922,7 +920,7 @@ public:
 				{
 					calc_error = 0;
 
-					CalcCoord cursor;
+					CalcCoord cursor{};
 					cursor.X = 0;
 					cursor.Y = 0;
 					std::wstring tmp = types[res.gettype()];
@@ -1036,7 +1034,7 @@ void CalcShowDialog()
 	// add radio-buttons
 	for (i = 0; i < addons_info.num_custom; i++)
 	{
-		CalcDialogItem it;
+		CalcDialogItem it{};
 		memset(&it, 0, sizeof(CalcDialogItem));
 		it.Type = CALC_DI_RADIOBUTTON;
 		it.X1 = 6;
@@ -1066,7 +1064,7 @@ void CalcShowDialog()
 	// add edit-boxes
 	for (i = 0; i < addons_info.num_custom; i++)
 	{
-		CalcDialogItem it;
+		CalcDialogItem it{};
 		memset(&it, 0, sizeof(CalcDialogItem));
 		it.Type = CALC_DI_EDIT;
 		it.PtrData = L"";

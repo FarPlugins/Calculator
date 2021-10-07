@@ -20,9 +20,7 @@ SArg::SArg()
 	empty = true;
 }
 
-SArg::~SArg()
-{
-}
+SArg::~SArg()= default;
 
 SArg::SArg(const SArg &a)
 {
