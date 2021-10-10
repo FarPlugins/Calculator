@@ -26,6 +26,7 @@ extern "C"
 	void   WINAPI GetGlobalInfoW(void *ginfo);
 	HANDLE WINAPI OpenW(void *oinfo);
 	int    WINAPI ConfigureW(void *);
+  void   WINAPI ExitFARW(void* einfo);
 }
 
 
@@ -63,6 +64,11 @@ void WINAPI GetGlobalInfoW(void *ginfo)
 	GetGlobalInfoFar3(ginfo, L"calculator");
 }
 
+void WINAPI ExitFARW(void* einfo)
+{
+  delete api;
+  delete dlg_funcs;
+}
 ////////////////////////////////////////////////////////////////////
 
 static std::unordered_map<DLGHANDLE, CalcDialog *> dlg_hash;
