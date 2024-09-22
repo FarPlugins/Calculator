@@ -1,5 +1,7 @@
 #ifdef _WIN64
 #define PLATFORM " x64"
+#elif defined _M_ARM64
+#define PLATFORM " ARM64"
 #elif defined _WIN32
 #define PLATFORM " x86"
 #else
@@ -8,7 +10,7 @@
 
 #define PLUGIN_VER_MAJOR 3
 #define PLUGIN_VER_MINOR 26
-#define PLUGIN_VER_PATCH 0
+#define PLUGIN_VER_PATCH 1
 #define PLUGIN_DESC L"Calculator plugin for FAR manager 3.0" PLATFORM
 #define PLUGIN_NAME L"Calculator"
 #define PLUGIN_FILENAME L"calc.dll"

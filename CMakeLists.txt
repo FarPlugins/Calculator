@@ -26,6 +26,8 @@ else()
 endif()
 message("Configurations for IDE: ${CMAKE_CONFIGURATION_TYPES}")
 
+set(CALC_BUILD_ARCH x64 CACHE STRING "Build architecture: x86, x64, arm64")
+
 # check platform for build
 set(IS_x64_PLATFORM FALSE CACHE BOOL "" FORCE)
 if ("$ENV{PLATFORM}" MATCHES "x64")
@@ -34,11 +36,7 @@ endif ()
 
 include(cmake/utils.cmake)
 plugin_extract_version(${CMAKE_CURRENT_LIST_DIR}/src/plugcalc/version.h)
-if (IS_x64_PLATFORM)
-  set(PACKAGE_FILE_NAME "${PROJECT_NAME}.${PLUGIN_VERSION}.x64")
-else ()
-  set(PACKAGE_FILE_NAME "${PROJECT_NAME}.${PLUGIN_VERSION}.x86")
-endif ()
+set(PACKAGE_FILE_NAME "${PROJECT_NAME}.${PLUGIN_VERSION}.${CALC_BUILD_ARCH}")
 
 #====================================================
 # build plugin

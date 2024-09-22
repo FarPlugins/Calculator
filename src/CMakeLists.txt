@@ -53,7 +53,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
   endif ()
 
-  set(FLAGS_CXX_DEFAULT /Zi)
+  set(FLAGS_CXX_DEFAULT /Zi /EHsc)
   set(FLAGS_CXX_RELEASE /W3 /Oi /Ot /GL /GS- /Ob1 /GF /GR)
   set(FLAGS_CXX_DEBUG /W3 /GS)
 
@@ -69,17 +69,18 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   if (IS_x64_PLATFORM)
     set(CMAKE_RC_FLAGS -D_WIN64)
     add_definitions(-DTTMATH_NOASM -DTTMATH_PLATFORM64)
-  else ()
+  elseif ("${CALC_BUILD_ARCH}" STREQUAL "x86")
     add_definitions(-DWINDOWS_IGNORE_PACKING_MISMATCH)
     # support old CPU AMD on WinXP
     set(FLAGS_CXX_DEFAULT ${FLAGS_CXX_DEFAULT} /arch:IA32)
     set(FLAGS_C_DEFAULT ${FLAGS_C_DEFAULT} /arch:IA32)
   endif ()
 
-  # for vc_crt_fix_impl.cpp
-  set(FLAGS_CXX_DEFAULT ${FLAGS_CXX_DEFAULT} /Zc:threadSafeInit-)
-  set(FLAGS_C_DEFAULT ${FLAGS_C_DEFAULT} /Zc:threadSafeInit-)
-
+  if (NOT("${CALC_BUILD_ARCH}" STREQUAL "arm64"))
+    # for vc_crt_fix_impl.cpp
+    set(FLAGS_CXX_DEFAULT ${FLAGS_CXX_DEFAULT} /Zc:threadSafeInit-)
+    set(FLAGS_C_DEFAULT ${FLAGS_C_DEFAULT} /Zc:threadSafeInit-)
+  endif()
 endif ()
 
 # set options for target
@@ -91,7 +92,7 @@ set(MAIN_FLAGS_C_RELEASE ${FLAGS_C_RELEASE} ${FLAGS_C_DEFAULT})
 #====================================================
 # support win2k, winxp
 #====================================================
-if (MSVC)
+if (MSVC AND NOT("${CALC_BUILD_ARCH}" STREQUAL "arm64"))
   set(ASM_SOURCE ${PROJECT_SOURCE_DIR}/shared/farplugin/vc_crt_fix.asm)
   set(ASM_OBJECT ${CMAKE_CURRENT_BINARY_DIR}/vc_crt_fix.obj)
   set(ASM_OBJECTS ${ASM_OBJECTS} ${ASM_OBJECT})
