@@ -33,9 +33,9 @@ copy *.zip ..\bin
 
 cd ..
 if exist "%VS170COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" (
-  call "%VS170COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm
+  call "%VS170COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64
 ) else (
-  call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm
+  call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64
 )
 mkdir build_arm64
 cd build_arm64
